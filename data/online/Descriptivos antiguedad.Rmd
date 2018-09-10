@@ -1,0 +1,125 @@
+```{r}
+
+```
+
+```{r include=FALSE}
+library(ggplot2)
+library(ggrepel)
+library(plotly)
+```
+
+```{r include=FALSE}
+renzo=read.csv("seguidoresRenzo.csv")
+```
+
+```{r include=FALSE}
+renzo$antiguedad=renzo$weight/12
+```
+
+```{r include=FALSE}
+summary(renzo$antiguedad) #años
+```
+
+```{r include=FALSE}
+RBC=read.csv("seguidoresRBC.csv")
+```
+
+```{r include=FALSE}
+RBC$antiguedad=RBC$weight/12
+```
+
+```{r include=FALSE}
+summary(RBC$antiguedad) #años
+```
+
+```{r include=FALSE}
+RBC=read.csv("seguidoresRBC.csv")
+```
+
+```{r include=FALSE}
+RBC$antiguedad=RBC$weight/12
+```
+
+```{r include=FALSE}
+summary(RBC$antiguedad) #años
+```
+
+```{r include=FALSE}
+data=rbind(renzo,RBC)
+```
+
+```{r include=FALSE}
+data$target2[data$target == "Renzo_Reggiardo"] = "Renzo Reggiardo"
+data$target2[data$target == "RicardoBelmontC"] = "Ricardo Belmont"
+```
+
+
+```{r include=FALSE}
+plot=ggplot(data, aes(x = target2, y = weight)) +
+        geom_boxplot(notch=T, fill="yellow")  + coord_flip() + theme(panel.grid.minor = element_blank()) + ggtitle("Antiguedad de followers en la red") + ylab("Tiempo en Twitter (meses)") + xlab(NULL) 
+
+p <- ggplotly(plot)
+```
+
+```{r echo=FALSE}
+plot
+```
+
+```{r echo=FALSE}
+p
+```
+
+
+```{r include=FALSE}
+data$tiempoa[data$antiguedad < 1] = 0
+data$tiempoa[1<= data$antiguedad & data$antiguedad < 2] = 1
+data$tiempoa[2<= data$antiguedad & data$antiguedad < 3] = 2
+data$tiempoa[3<= data$antiguedad & data$antiguedad < 4] = 3
+data$tiempoa[4<= data$antiguedad & data$antiguedad < 5] = 4 
+data$tiempoa[5<= data$antiguedad & data$antiguedad < 6] = 5 
+data$tiempoa[6<= data$antiguedad & data$antiguedad < 7] = 6  
+data$tiempoa[7<= data$antiguedad & data$antiguedad < 8] = 7  
+data$tiempoa[8<= data$antiguedad & data$antiguedad < 9] = 8  
+data$tiempoa[9<= data$antiguedad & data$antiguedad < 10] = 9 
+data$tiempoa[10<= data$antiguedad & data$antiguedad < 11] = 10 
+data$tiempoa[11<= data$antiguedad & data$antiguedad < 12] = 11 
+data$tiempoa[12<= data$antiguedad & data$antiguedad < 13] = 12
+data$tiempoa[13<= data$antiguedad & data$antiguedad < 14] = 13
+data$tiempoa[ 14 < data$antiguedad] = 14
+```
+
+
+```{r include=FALSE}
+library(ggplot2)                           
+
+#turn table into a data frame:
+tabla=as.data.frame(table(data$target2,data$tiempoa))
+names(tabla)=c('Candidato','Tiempo','Followers')
+
+#Plot the Data
+g <- ggplot(tabla, aes(Candidato, Tiempo)) + geom_point(aes(size = Followers), colour = "green") +  xlab("") + ylab("") +theme(legend.position="none")
+g=g + scale_size_continuous(range=c(5,30)) + geom_text(aes(label = Followers)) + theme(panel.grid.minor = element_blank()) + ylab("Tiempo en Twitter")
+
+p <- ggplotly(g)
+```
+
+```{r echo=FALSE}
+g
+```
+
+```{r echo=FALSE}
+p
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
