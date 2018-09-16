@@ -1,0 +1,125 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(ggplot2)
+library(tidyr)
+library(tidyverse)
+library(plotly)
+```
+
+##Reggiardo 
+```{r include=FALSE}
+dataRR=read.csv("rregiardo_ago_data.csv",stringsAsFactors = F)
+dataRR$date=as.POSIXct(dataRR$fecha,format="%Y-%m-%d %H:%M:%S")
+dataRR$fecha=as.Date(substring(dataRR$fecha,1,10), "%Y-%m-%d")
+
+dataPlotRR=dataRR[,-c(5)]
+dataPlotRR=dataPlotRR[!duplicated(dataPlotRR), ]
+dataPlotRR=dataPlotRR %>% gather(variable, value, Positividad:ReTweets)
+```
+
+```{r echo=FALSE}
+library(ggplot2)
+ggplot(dataPlotRR, aes(x = date, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~.,scales = "free") + theme_minimal() +theme(legend.position="none")+
+    ggtitle("Tweets Reggiardo Agosto") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
+
+##Belmont
+```{r include=FALSE}
+dataRBC=read.csv("rbc_ago_data.csv",stringsAsFactors = F)
+dataRBC$date=as.POSIXct(dataRBC$fecha,format="%Y-%m-%d %H:%M:%S")
+dataRBC$fecha=as.Date(substring(dataRBC$fecha,1,10), "%Y-%m-%d")
+
+dataPlotRBC=dataRBC[,-c(5)]
+dataPlotRBC=dataPlotRBC[!duplicated(dataPlotRBC), ]
+dataPlotRBC=dataPlotRBC %>% gather(variable, value, Positividad:ReTweets)
+head(dataPlotRBC)
+```
+
+
+```{r echo=FALSE}
+ggplot(dataPlotRBC, aes(x = date, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~.,scales = "free") + theme_minimal() +theme(legend.position="none")+
+    ggtitle("Tweets RBC agosto") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
+
+###Urresti 
+
+```{r include=FALSE}
+dataURR=read.csv("urresti_ago_data.csv",stringsAsFactors = F)
+dataURR$date=as.POSIXct(dataURR$fecha,format="%Y-%m-%d %H:%M:%S")
+dataURR$fecha=as.Date(substring(dataURR$fecha,1,10), "%Y-%m-%d")
+
+dataPlotURR=dataURR[,-c(5)]
+dataPlotURR=dataPlotURR[!duplicated(dataPlotURR), ]
+dataPlotURR=dataPlotURR %>% gather(variable, value, Positividad:ReTweets)
+head(dataPlotURR)
+```
+
+```{r echo=FALSE}
+library(ggplot2)
+ggplot(dataPlotURR, aes(x = date, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~.,scales = "free") + theme_minimal() +theme(legend.position="none")+
+    ggtitle("Tweets Urresti Agosto") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
+
+##Data Reggiardo 
+
+```{r include=FALSE}
+head(dataRR)
+```
+
+```{r include=FALSE}
+dataReggiardo = dataRR %>% group_by(fecha) %>% 
+  summarize(Positividad=mean(Positividad), Likes=mean(Likes), ReTweets=mean(ReTweets))
+
+dataReggiardo$candidato = "Reggiardo"
+```
+
+```{r include=FALSE}
+dataBelmont= dataRBC %>% group_by(fecha) %>% 
+  summarize(Positividad=mean(Positividad), Likes=mean(Likes), ReTweets=mean(ReTweets))
+
+dataBelmont$candidato = "Belmont"
+```
+
+```{r include=FALSE}
+dataUrresti= dataURR %>% group_by(fecha) %>% 
+  summarize(Positividad=mean(Positividad), Likes=mean(Likes), ReTweets=mean(ReTweets))
+
+dataUrresti$candidato = "Urresti"
+```
+
+```{r include=FALSE}
+datafinal2=rbind(dataReggiardo, dataBelmont, dataUrresti)
+```
+
+```{r include=FALSE}
+head(datafinal2)
+```
+
+###GRAFICO ANALISIS DE SENTIMIENTOS
+
+```{r include=FALSE}
+grafico= ggplot(datafinal2, aes(x = fecha, y = Positividad)) + 
+    geom_line(aes(color = candidato), size = 1) +
+    facet_grid(candidato~.,scales = "fixed")  +theme(legend.position="none")+
+    ggtitle("Analisis de sentimientos") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold")) + xlab("Fecha Tweets") + ylab("Nivel de Positividad")  
+
+grafico
+```
+
+
+```{r echo=FALSE}
+p <- ggplotly(grafico)
+
+p
+```
+
+
