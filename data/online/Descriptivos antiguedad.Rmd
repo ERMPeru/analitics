@@ -1,6 +1,5 @@
-```{r}
 
-```
+#Followers de candidatos a Lima Metropolitana
 
 ```{r include=FALSE}
 library(ggplot2)
@@ -13,35 +12,24 @@ renzo=read.csv("seguidoresRenzo.csv")
 ```
 
 ```{r include=FALSE}
-renzo$antiguedad=renzo$weight/12
+summary(renzo$weight) #años
 ```
 
 ```{r include=FALSE}
-summary(renzo$antiguedad) #años
+renzo$antiguedad = renzo$weight/12
 ```
 
-```{r include=FALSE}
-RBC=read.csv("seguidoresRBC.csv")
-```
-
-```{r include=FALSE}
-RBC$antiguedad=RBC$weight/12
-```
-
-```{r include=FALSE}
-summary(RBC$antiguedad) #años
-```
 
 ```{r include=FALSE}
 RBC=read.csv("seguidoresRBC.csv")
 ```
 
 ```{r include=FALSE}
-RBC$antiguedad=RBC$weight/12
+summary(RBC$weight) #años
 ```
 
 ```{r include=FALSE}
-summary(RBC$antiguedad) #años
+RBC$antiguedad = RBC$weight/12
 ```
 
 ```{r include=FALSE}
@@ -53,17 +41,14 @@ data$target2[data$target == "Renzo_Reggiardo"] = "Renzo Reggiardo"
 data$target2[data$target == "RicardoBelmontC"] = "Ricardo Belmont"
 ```
 
-
 ```{r include=FALSE}
 plot=ggplot(data, aes(x = target2, y = weight)) +
-        geom_boxplot(notch=T, fill="yellow")  + coord_flip() + theme(panel.grid.minor = element_blank()) + ggtitle("Antiguedad de followers en la red") + ylab("Tiempo en Twitter (meses)") + xlab(NULL) 
+        geom_boxplot(notch=T, fill="yellow")  + coord_flip() + theme(panel.grid.minor = element_blank()) + ggtitle("") + ylab("Tiempo en Twitter (meses)") + xlab(NULL) 
 
 p <- ggplotly(plot)
 ```
 
-```{r echo=FALSE}
-plot
-```
+### Antiguedad de Followers Candidatos Lima Metropolitana
 
 ```{r echo=FALSE}
 p
@@ -98,13 +83,9 @@ names(tabla)=c('Candidato','Tiempo','Followers')
 
 #Plot the Data
 g <- ggplot(tabla, aes(Candidato, Tiempo)) + geom_point(aes(size = Followers), colour = "green") +  xlab("") + ylab("") +theme(legend.position="none")
-g=g + scale_size_continuous(range=c(5,30)) + geom_text(aes(label = Followers)) + theme(panel.grid.minor = element_blank()) + ylab("Tiempo en Twitter")
+g=g + scale_size_continuous(range=c(5,30)) + geom_text(aes(label = Followers)) + theme(panel.grid.minor = element_blank()) + ylab("Tiempo en Twitter (years)") +ggtitle("Tiempo en Twitter de Followers")
 
 p <- ggplotly(g)
-```
-
-```{r echo=FALSE}
-g
 ```
 
 ```{r echo=FALSE}
@@ -113,13 +94,76 @@ p
 
 
 
+```{r include=FALSE}
+renzo2=read.csv("seguidosPorRenzo 2.csv")
+```
+
+```{r echo=FALSE}
+summary(renzo2$weight) #años
+```
+
+```{r include=FALSE}
+renzo2$antiguedad = renzo2$weight/12
+```
 
 
+```{r include=FALSE}
+RBC2=read.csv("seguidosPorRBC 2.csv")
+```
+
+```{r include=FALSE}
+summary(RBC2$weight) #años
+```
+
+```{r include=FALSE}
+RBC2$antiguedad = RBC2$weight/12
+```
+
+```{r include=FALSE}
+data2=rbind(renzo2,RBC2)
+```
+
+```{r include=FALSE}
+data2$source2[data2$source == "Renzo_Reggiardo"] = "Renzo Reggiardo"
+data2$source2[data2$source == "RicardoBelmontC"] = "Ricardo Belmont"
+```
+
+```{r include=FALSE}
+data2$tiempoa[data2$antiguedad < 1] = 0
+data2$tiempoa[1<= data2$antiguedad & data2$antiguedad < 2] = 1
+data2$tiempoa[2<= data2$antiguedad & data2$antiguedad < 3] = 2
+data2$tiempoa[3<= data2$antiguedad & data2$antiguedad < 4] = 3
+data2$tiempoa[4<= data2$antiguedad & data2$antiguedad < 5] = 4 
+data2$tiempoa[5<= data2$antiguedad & data2$antiguedad < 6] = 5 
+data2$tiempoa[6<= data2$antiguedad & data2$antiguedad < 7] = 6  
+data2$tiempoa[7<= data2$antiguedad & data2$antiguedad < 8] = 7  
+data2$tiempoa[8<= data2$antiguedad & data2$antiguedad < 9] = 8  
+data2$tiempoa[9<= data2$antiguedad & data2$antiguedad < 10] = 9 
+data2$tiempoa[10<= data2$antiguedad & data2$antiguedad < 11] = 10 
+data2$tiempoa[11<= data2$antiguedad & data2$antiguedad < 12] = 11 
+data2$tiempoa[12<= data2$antiguedad & data2$antiguedad < 13] = 12
+data2$tiempoa[13<= data2$antiguedad & data2$antiguedad < 14] = 13
+data2$tiempoa[ 14 < data2$antiguedad] = 14
+```
+
+```{r include=FALSE}
+library(ggplot2)                           
+
+#turn table into a data frame:
+tabla=as.data.frame(table(data2$source2,data2$tiempoa))
+names(tabla)=c('Candidato','Tiempo','Following')
+
+#Plot the Data
+g <- ggplot(tabla, aes(Candidato, Tiempo)) + geom_point(aes(size = Following), colour = "green") +  xlab("") + ylab("") +theme(legend.position="none")
+g=g + scale_size_continuous(range=c(5,30)) + geom_text(aes(label = Following)) + theme(panel.grid.minor = element_blank()) + ylab("Tiempo en Twitter (years)")  +ggtitle("Tiempo en Twitter de Following")
 
 
+p <- ggplotly(g)
+```
 
-
-
+```{r echo=FALSE}
+p
+```
 
 
 

@@ -19,9 +19,7 @@ colnames(data)= c("x", "candidato", "alias" ,"followers", "following", "antigued
 ```{r include=FALSE}
 data2= data[!is.na(data$intencion_voto),]
 ```
-```{r}
 
-```
 
 
 ```{r include=FALSE}

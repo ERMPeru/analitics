@@ -1,0 +1,31 @@
+Carga data: 
+
+```{r}
+library(readxl)
+data2014=read_xlsx("Tabla10-ERM2014-Regional.xlsx")
+```
+
+```{r}
+head(data2014)
+```
+
+```{r}
+length(unique(data2014$TXORGPOL))
+```
+
+```{r}
+names(table(data2014$TXORGPOL))
+```
+
+```{r}
+
+```
+
+
+
+
+- Votos en blanco
+- Votos nulos
+
+
+
