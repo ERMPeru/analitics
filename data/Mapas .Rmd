@@ -88,8 +88,8 @@ Votos válidos y porcentaje partidos/movimientos
 ```{r}
 data_final14  = data_final14 %>% 
           mutate (votos_validos = votos_emitidos-blancos_nulos,
-                  por_partidos_politicos = partidos_politicos/votos_validos,
-                  por_mov_regionales = mov_regionales/votos_validos) 
+              por_partidos_politicos = (partidos_politicos/votos_validos)*100,
+              por_mov_regionales = (mov_regionales/votos_validos)*100) 
 ```
 
 Concentración:
