@@ -173,6 +173,7 @@ ganadoresGR06 = ganadoresGR06 %>% filter(row_number()==1) %>% select(UBIGEOREGIO
 ganadoresGR06 = ganadoresGR06[complete.cases(ganadoresGR06),]
 ```
 
+
 ```{r}
 data_finalGR06 = left_join(data_finalGR06, ganadoresGR06, by="UBIGEOREGION") #join 
 ```

@@ -722,7 +722,7 @@ datafinal10 = full_join(datafinal10, data_finalGL10[-c(2,3)], by="UBIGEO") #join
 ### INDICADOR DE HOMOGENEIDAD VERTICAL
 
 ```{r}
-datafinal10$HRegProv10 = ifelse(datafinal10$ganadorGR10 == datafinal10$ganadorGR10,1,0) ## relacion GR con GL
+datafinal10$HRegProv10 = ifelse(datafinal10$ganadorGP10 == datafinal10$ganadorGR10,1,0) ## relacion GR con GL
 
 datafinal10$HProvDist10 = ifelse(datafinal10$ganadorGP10 == datafinal10$ganadorGL10,1,0) ## relacion GP con GL
 
