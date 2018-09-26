@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/423116/e7e9b4ec062b4b3287f8385a50fa6111
+bundleId: https://api.rpubs.com/api/v1/document/423116/e7e9b4ec062b4b3287f8385a50fa6111
+url: http://rpubs.com/mgbecerra/423116
+when: 1537901744.29901

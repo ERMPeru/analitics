@@ -1,0 +1,687 @@
+
+```{r}
+library(readxl)
+library(tidyverse)
+```
+
+##### GOBIERNO REGIONAL 2014
+
+Carga data: 
+
+```{r}
+dataGR14=read_xlsx("Tabla10-ERM2014-Regional.xlsx")
+```
+
+###Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGR14$TXUBIGEOPROVINCIA=dataGR14$TXUBIGEO
+substr(dataGR14$TXUBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+dataGR14$TXUBIGEOREGION=dataGR14$TXUBIGEO
+substr(dataGR14$TXUBIGEOREGION,3,6)='0000'
+```
+
+###Organizaciones políticas
+
+```{r}
+organizacionesGR14 = dataGR14[c(5,6)]
+organizacionesGR14 = organizacionesGR14[!duplicated(organizacionesGR14),]
+```
+
+Eliminar votos blancos y nulos:
+
+```{r}
+organizacionesGR14 = organizacionesGR14[-c(1,4),]
+```
+
+Total organizaciones a nivel regional:
+
+```{r}
+nrow(organizacionesGR14)
+```
+
+Por tipo:
+
+```{r}
+table(organizacionesGR14$TIPOORGPOL)
+```
+
+Partidos:
+
+```{r}
+names(table(organizacionesGR14[organizacionesGR14$TIPOORGPOL=="PARTIDO POLITICO",]$TXORGPOL))
+```
+
+###Ordenar data:
+
+Ubigeos:
+
+```{r}
+ubigeos = dataGR14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(TXUBIGEOREGION = max(TXUBIGEOREGION, na.rm = T),
+                     TXUBIGEOPROVINCIA = max(TXUBIGEOPROVINCIA, na.rm = T)) 
+```
+
+Electores por distritos:
+
+```{r}
+electores = dataGR14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGR14 = max(ELECTORES, na.rm = T)) 
+
+data_finalGR14 = left_join(ubigeos,electores, by="TXUBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGR14 %>% group_by(TXUBIGEO) %>% 
+           summarise(emitidosGR14 = sum(VOTOS, na.rm = T))
+
+data_finalGR14 = left_join(data_finalGR14, emitidos, by="TXUBIGEO") #join
+
+#ciudar que los que tienen 0 en votos emitidos sean NA
+data_finalGR14[data_finalGR14$emitidosGR14==0,]$emitidosGR14 = NA
+```
+
+Calcular ausentes: 
+
+```{r}
+data_finalGR14 = data_finalGR14 %>% 
+  mutate(ausentesGR14= electoresGR14 - emitidosGR14, 
+         por_ausentesGR14 = (ausentesGR14/electoresGR14)*100)
+```
+
+Votos blancos + nulos
+
+```{r}
+blancos_nulos = dataGR14 %>% filter(TIPOORGPOL == "VOTOS EN BLANCO" | TIPOORGPOL =="VOTOS NULOS" ) %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(blancosnulosGR14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGR14 = left_join(data_finalGR14, blancos_nulos, by="TXUBIGEO") #join
+
+data_finalGR14  = data_finalGR14 %>% 
+          mutate (por_blancosnulosGR14 = (blancosnulosGR14/emitidosGR14)*100) 
+```
+
+votos validos:
+
+```{r}
+data_finalGR14  = data_finalGR14 %>% 
+          mutate (validosGR14 = emitidosGR14-blancosnulosGR14) 
+```
+
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGR14 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(partidosGR14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGR14 = left_join(data_finalGR14, partidos_politicos, by="TXUBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGR14 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(movimientosGR14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGR14 = left_join(data_finalGR14, mov_regionales, by="TXUBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGR14  = data_finalGR14 %>% 
+          mutate (por_partidosGR14 = (partidosGR14/validosGR14)*100,
+                  por_movimientosGR14 = (movimientosGR14/validosGR14)*100)
+
+data_finalGR14$por_partidosGR14[is.nan(data_finalGR14$por_partidosGR14)] = 0 
+data_finalGR14$por_movimientosGR14[is.nan(data_finalGR14$por_movimientosGR14)] = 0 
+```
+
+##Ganadores GR
+
+Eliminar votos blancos y nulos:
+
+```{r}
+dataGR14= dataGR14[!dataGR14$TIPOORGPOL == "VOTOS EN BLANCO",]
+dataGR14= dataGR14[!dataGR14$TIPOORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla según votos
+
+```{r}
+dataGR14 <- dataGR14[order(dataGR14$TXUBIGEO, -dataGR14$VOTOS),] 
+```
+
+###Ganadores:
+
+```{r}
+ganadoresGR =dataGR14 %>% group_by(TXUBIGEOREGION,TXORGPOL) %>% summarise(votos = sum(VOTOS, na.rm = T))  %>% mutate(ganadorGR14 = TXORGPOL)
+validosGR =dataGR14 %>% group_by(TXUBIGEOREGION) %>% summarise(votos_validos = sum(VOTOS, na.rm = T)) 
+ganadoresGR14 = left_join(ganadoresGR, validosGR, by="TXUBIGEOREGION") #join
+ganadoresGR14 = ganadoresGR14  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGR14 = ganadoresGR14[order(ganadoresGR14$TXUBIGEOREGION, -ganadoresGR14$por_voto),] 
+ganadoresGR14 = ganadoresGR14 %>% filter(row_number()==1) %>% select(TXUBIGEOREGION,ganadorGR14)
+ganadoresGR14 = ganadoresGR14[complete.cases(ganadoresGR14),]
+```
+
+Hay algunos que tuvieron que ir a segunda vuelta y ganaron otras organizaciones:
+
+```{r}
+ganadoresGR14[2,2] = "MOVIMIENTO INDEPENDIENTE REGIONAL PURO ANCASH"#ANCASH
+ganadoresGR14[3,2] = "MOVIMIENTO INDEPENDIENTE FUERZA CAMPESINA REGIONAL" #APURIMAC
+ganadoresGR14[4,2] = "AREQUIPA, TRADICION Y FUTURO" #AREQUIPA
+ganadoresGR14[8,2] = "KAUSACHUN CUSCO" #CUSCO
+ganadoresGR14[22,2] = "FUERZA POPULAR" #SAN MARTIN
+```
+
+```{r}
+data_finalGR14 = left_join(data_finalGR14, ganadoresGR14, by="TXUBIGEOREGION") #join 
+head(data_finalGR14)
+```
+
+###Indicadores políticos 
+
+###### Concentración:
+
+- P1: Proporción de votos válidos obtenidos por el partido más votado.
+- P2: Proporción de votos válidos obtenidos por el segundo par- tido más votado.
+
+C= P1 + P2
+
+Votos ganador
+```{r}
+primero = dataGR14 %>% group_by(TXUBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGR14=VOTOS)
+
+data_finalGR14 = left_join(data_finalGR14, primero[c(1,15)], by="TXUBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGR14 %>% group_by(TXUBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGR14=VOTOS)
+
+data_finalGR14 = left_join(data_finalGR14, segundo[c(1,15)], by="TXUBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGR14 = data_finalGR14 %>% mutate(concentracionGR14 = primeroGR14/validosGR14 + segundoGR14/validosGR14)
+
+data_finalGR14=data_finalGR14[-c(16,17)]
+```
+
+###### NEP Y Herfindahl
+
+Nep:
+
+- P= Proporción de votos válidos obtenidos por las organizacio- nes políticas en cada circunscripción.
+                          
+NEP = 1/ SUM(p^2)     
+
+Herfindahl: SUM(p^2)   
+
+Añadir votos validos a la tabla general:
+
+```{r}
+dataGR14 = left_join(dataGR14, data_finalGR14[c(1,10)], by="TXUBIGEO") #join 
+```
+
+Calcular proporción de votos validos 
+
+```{r}
+dataGR14$prop_votos2 = (dataGR14$VOTOS/dataGR14$validosGR14)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGR14 %>% group_by(TXUBIGEO) %>% 
+  summarise(HerfindahlGR14 = sum(prop_votos2, na.rm = T),
+            NEPGR14 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGR14 = left_join(data_finalGR14, NEP, by="TXUBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGR14$HerfindahlGR14[data_finalGR14$HerfindahlGR14==0] = NA 
+data_finalGR14$NEPGR14[is.infinite(data_finalGR14$NEPGR14)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENE 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGR14[data_finalGR14$por_blancosnulosGR14 == 100,]$TXUBIGEO
+```
+
+```{r}
+head(data_finalGR14)
+```
+
+## GOBIERNO PROVINCIAL 2014
+
+Carga data: 
+
+```{r}
+dataGP14=read_xlsx("PROVINCIAL_2014_DISTRITAL.xlsx")
+head(dataGP14)
+```
+
+### Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGP14$TXUBIGEOPROVINCIA=dataGP14$TXUBIGEO
+substr(dataGP14$TXUBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+
+dataGP14$TXUBIGEOREGION=dataGP14$TXUBIGEO
+substr(dataGP14$TXUBIGEOREGION,3,6)='0000'
+```
+
+###ORDENAR DATA:
+
+Electores por distritos:
+
+Ubigeos:
+
+```{r}
+ubigeos = dataGP14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(TXUBIGEOREGION = max(TXUBIGEOREGION, na.rm = T),
+                     TXUBIGEOPROVINCIA = max(TXUBIGEOPROVINCIA, na.rm = T)) 
+```
+
+
+Electores por distritos:
+
+```{r}
+electores = dataGP14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGP14 = max(ELECTORES, na.rm = T)) 
+
+data_finalGP14 = left_join(ubigeos,electores, by="TXUBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGP14 %>% group_by(TXUBIGEO) %>% 
+           summarise(emitidosGP14 = sum(VOTOS, na.rm = T))
+
+data_finalGP14 = left_join(data_finalGP14, emitidos, by="TXUBIGEO") #join
+
+#ciudar que los que tienen 0 en votos emitidos sean NA
+data_finalGP14[data_finalGP14$emitidosGP14==0,]$emitidosGP14 = NA
+```
+
+Calcular ausentes: 
+
+```{r}
+data_finalGP14 = data_finalGP14 %>% 
+  mutate(ausentesGP14= electoresGP14 - emitidosGP14, 
+         por_ausentesGP14 = (ausentesGP14/electoresGP14)*100)
+```
+
+Votos blancos + nulos
+
+```{r}
+blancos_nulos = dataGP14 %>% filter(TXORGPOL == "VOTOS EN BLANCO" | TXORGPOL =="VOTOS NULOS" ) %>% group_by(TXUBIGEO) %>% 
+                summarise(blancosnulosGP14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGP14 = left_join(data_finalGP14, blancos_nulos, by="TXUBIGEO") #join
+
+data_finalGP14  = data_finalGP14 %>% 
+          mutate (por_blancosnulosGP14 = (blancosnulosGP14/emitidosGP14)*100) 
+```
+
+votos validos:
+
+```{r}
+data_finalGP14  = data_finalGP14 %>% 
+          mutate (validosGP14 = emitidosGP14-blancosnulosGP14) 
+```
+
+OJO: todavia no tengo la información de tipo de organizacion politica. 
+
+###Ganadores GP
+
+Eliminar votos blancos y nulos:
+
+```{r}
+dataGP14= dataGP14[!dataGP14$TXORGPOL == "VOTOS EN BLANCO",]
+dataGP14= dataGP14[!dataGP14$TXORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla en según votos
+
+```{r}
+dataGP14 <- dataGP14[order(dataGP14$TXUBIGEO, -dataGP14$VOTOS),] 
+```
+
+```{r}
+ganadoresGP =dataGP14 %>% group_by(TXUBIGEOPROVINCIA,TXORGPOL) %>% summarise(votos = sum(VOTOS, na.rm = T))  %>% mutate(ganadorGP14 = TXORGPOL)
+validosGP =dataGP14 %>% group_by(TXUBIGEOPROVINCIA) %>% summarise(votos_validos = sum(VOTOS, na.rm = T)) 
+ganadoresGP14 = left_join(ganadoresGP, validosGP, by="TXUBIGEOPROVINCIA") #join
+ganadoresGP14 = ganadoresGP14  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGP14 = ganadoresGP14[order(ganadoresGP14$TXUBIGEOPROVINCIA, -ganadoresGP14$por_voto),] 
+ganadoresGP14 = ganadoresGP14 %>% filter(row_number()==1) %>% select(TXUBIGEOPROVINCIA,ganadorGP14)
+ganadoresGP14 = ganadoresGP14[complete.cases(ganadoresGP14),]
+```
+
+```{r}
+data_finalGP14 = left_join(data_finalGP14, ganadoresGP14, by="TXUBIGEOPROVINCIA") #join 
+```
+
+###Indicadores políticos 
+
+###### Concentración:
+
+- P1: Proporción de votos válidos obtenidos por el partido más votado.
+- P2: Proporción de votos válidos obtenidos por el segundo par- tido más votado.
+
+C= P1 + P2
+
+Votos ganador
+```{r}
+primero = dataGP14 %>% group_by(TXUBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGP14=VOTOS)
+
+data_finalGP14 = left_join(data_finalGP14, primero[c(1,14)], by="TXUBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGP14 %>% group_by(TXUBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGP14=VOTOS)
+
+data_finalGP14 = left_join(data_finalGP14, segundo[c(1,14)], by="TXUBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGP14 = data_finalGP14 %>% mutate(concentracionGP14 = primeroGP14/validosGP14 + segundoGP14/validosGP14)
+
+data_finalGP14=data_finalGP14[-c(12,13)]
+```
+
+
+###### NEP Y Herfindahl
+
+Nep:
+
+- P= Proporción de votos válidos obtenidos por las organizacio- nes políticas en cada circunscripción.
+                          
+NEP = 1/ SUM(p^2)     
+
+Herfindahl: SUM(p^2)   
+
+Añadir votos validos a la tabla general:
+
+```{r}
+dataGP14 = left_join(dataGP14, data_finalGP14[c(1,10)], by="TXUBIGEO") #join 
+```
+
+Calcular proporción de votos validos 
+
+```{r}
+dataGP14$prop_votos2 = (dataGP14$VOTOS/dataGP14$validosGP14)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGP14 %>% group_by(TXUBIGEO) %>% 
+  summarise(HerfindahlGP14 = sum(prop_votos2, na.rm = T),
+            NEPGP14 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGP14 = left_join(data_finalGP14, NEP, by="TXUBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGP14$HerfindahlGP14[data_finalGP14$HerfindahlGP14==0] = NA 
+data_finalGP14$NEPGP14[is.infinite(data_finalGP14$NEPGP14)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGP14[data_finalGP14$por_blancosnulosGP14 == 100,]$TXUBIGEO
+```
+
+```{r}
+head(data_finalGP14)
+```
+
+
+##GOBIERNO DISTRITAL 2014
+
+Carga data: 
+
+```{r}
+dataGL14=read_xlsx("distrital_2014_DISTRITAL.xlsx")
+head(dataGL14)
+```
+
+### Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGL14$TXUBIGEOPROVINCIA=dataGL14$TXUBIGEO
+substr(dataGL14$TXUBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+
+dataGL14$TXUBIGEOREGION=dataGL14$TXUBIGEO
+substr(dataGL14$TXUBIGEOREGION,3,6)='0000'
+```
+
+### ORDENAR DATA:
+
+Electores por distritos:
+
+Ubigeos:
+
+```{r}
+ubigeos = dataGL14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(TXUBIGEOREGION = max(TXUBIGEOREGION, na.rm = T),
+                     TXUBIGEOPROVINCIA = max(TXUBIGEOPROVINCIA, na.rm = T)) 
+```
+
+
+Electores por distritos:
+
+```{r}
+electores = dataGL14 %>% 
+            group_by(TXUBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGL14 = max(ELECTORES, na.rm = T)) 
+
+data_finalGL14 = left_join(ubigeos,electores, by="TXUBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGL14 %>% group_by(TXUBIGEO) %>% 
+           summarise(emitidosGL14 = sum(VOTOS, na.rm = T))
+
+data_finalGL14 = left_join(data_finalGL14, emitidos, by="TXUBIGEO") #join
+
+#ciudar que los que tienen 0 en votos emitidos sean NA
+data_finalGL14[data_finalGL14$emitidosGL14==0,]$emitidosGL14 = NA
+```
+
+Calcular ausentes: 
+
+```{r}
+data_finalGL14 = data_finalGL14 %>% 
+  mutate(ausentesGL14= electoresGL14 - emitidosGL14, 
+         por_ausentesGL14 = (ausentesGL14/electoresGL14)*100)
+```
+
+Votos blancos + nulos
+
+```{r}
+blancos_nulos = dataGL14 %>% filter(TXORGPOL == "VOTOS EN BLANCO" | TXORGPOL =="VOTOS NULOS" ) %>% group_by(TXUBIGEO) %>% 
+                summarise(blancosnulosGL14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGL14 = left_join(data_finalGL14, blancos_nulos, by="TXUBIGEO") #join
+
+data_finalGL14  = data_finalGL14 %>% 
+          mutate (por_blancosnulosGL14 = (blancosnulosGL14/emitidosGL14)*100) 
+```
+
+votos validos:
+
+```{r}
+data_finalGL14  = data_finalGL14 %>% 
+          mutate (validosGL14 = emitidosGL14-blancosnulosGL14) 
+```
+
+OJO: todavia no tengo la información de tipo de organizacion politica. 
+
+### Ganadores GP
+
+Eliminar votos blancos y nulos:
+
+```{r}
+dataGL14= dataGL14[!dataGL14$TXORGPOL == "VOTOS EN BLANCO",]
+dataGL14= dataGL14[!dataGL14$TXORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla en según votos
+
+```{r}
+dataGL14 <- dataGL14[order(dataGL14$TXUBIGEO, -dataGL14$VOTOS),] 
+```
+
+```{r}
+ganadoresGL =dataGL14 %>% group_by(TXUBIGEO,TXORGPOL) %>% summarise(votos = sum(VOTOS, na.rm = T))  %>% mutate(ganadorGL14 = TXORGPOL)
+validosGL =dataGL14 %>% group_by(TXUBIGEO) %>% summarise(votos_validos = sum(VOTOS, na.rm = T)) 
+ganadoresGL14 = left_join(ganadoresGL, validosGL, by="TXUBIGEO") #join
+ganadoresGL14 = ganadoresGL14  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGL14 = ganadoresGL14[order(ganadoresGL14$TXUBIGEO, -ganadoresGL14$por_voto),]
+ganadoresGL14 = ganadoresGL14 %>% filter(row_number()==1) %>% select(TXUBIGEO,ganadorGL14)
+ganadoresGL14 = ganadoresGL14[complete.cases(ganadoresGL14),]
+```
+
+```{r}
+data_finalGL14 = left_join(data_finalGL14, ganadoresGL14, by="TXUBIGEO") #join 
+
+##Cuidar que los que tengan 100 de votos nulos y blancos no tengan partido
+
+data_finalGL14$ganadorGL14=ifelse(data_finalGL14$por_blancosnulosGL14==100, NA,data_finalGL14$ganadorGL14)
+```
+
+###Indicadores políticos 
+
+###### Concentración:
+
+- P1: Proporción de votos válidos obtenidos por el partido más votado.
+- P2: Proporción de votos válidos obtenidos por el segundo par- tido más votado.
+
+C= P1 + P2
+
+Votos ganador
+```{r}
+primero = dataGL14 %>% group_by(TXUBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGL14=VOTOS)
+
+data_finalGL14 = left_join(data_finalGL14, primero[c(1,14)], by="TXUBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGL14 %>% group_by(TXUBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGL14=VOTOS)
+
+data_finalGL14 = left_join(data_finalGL14, segundo[c(1,14)], by="TXUBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGL14 = data_finalGL14 %>% mutate(concentracionGL14 = primeroGL14/validosGL14 + segundoGL14/validosGL14)
+
+data_finalGL14=data_finalGL14[-c(12,13)]
+```
+
+
+###### NEP Y Herfindahl
+
+Nep:
+
+- P= Proporción de votos válidos obtenidos por las organizacio- nes políticas en cada circunscripción.
+                          
+NEP = 1/ SUM(p^2)     
+
+Herfindahl: SUM(p^2)   
+
+Añadir votos validos a la tabla general:
+
+```{r}
+dataGL14 = left_join(dataGL14, data_finalGL14[c(1,10)], by="TXUBIGEO") #join 
+```
+
+Calcular proporción de votos validos 
+
+```{r}
+dataGL14$prop_votos2 = (dataGL14$VOTOS/dataGL14$validosGL14)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGL14 %>% group_by(TXUBIGEO) %>% 
+  summarise(HerfindahlGL14 = sum(prop_votos2, na.rm = T),
+            NEPGL14 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGL14 = left_join(data_finalGL14, NEP, by="TXUBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGL14$HerfindahlGL14[data_finalGL14$HerfindahlGL14==0] = NA 
+data_finalGL14$NEPGL14[is.infinite(data_finalGL14$NEPGL14)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGL14[data_finalGL14$por_blancosnulosGL14 == 100,]$TXUBIGEO
+```
+
+```{r}
+head(data_finalGL14)
+```
+
+
+## Merge: 
+
+```{r}
+datafinal14 = full_join(data_finalGR14, data_finalGP14[-c(2,3)], by="TXUBIGEO") #join
+datafinal14 = full_join(datafinal14, data_finalGL14[-c(2,3)], by="TXUBIGEO") #join 
+```
+
+### INDICADOR DE HOMOGENEIDAD VERTICAL
+
+```{r}
+datafinal14$HRegProv14 = ifelse(datafinal14$ganadorGR14 == datafinal14$ganadorGP14,1,0) ## relacion GR con GL
+
+datafinal14$HProvDist14 = ifelse(datafinal14$ganadorGP14 == datafinal14$ganadorGL14,1,0) ## relacion GP con GL
+
+datafinal14$HRegDist14 = ifelse(datafinal14$ganadorGR14 == datafinal14$ganadorGL14,1,0) ## relacion GR con GL
+```
+
+```{r}
+head(datafinal14)
+```
+
+```{r}
+save(datafinal14, file = "data_final.rda")
+```
+
