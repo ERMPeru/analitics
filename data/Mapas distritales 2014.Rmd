@@ -301,7 +301,6 @@ ubigeos = dataGP14 %>%
                      TXUBIGEOPROVINCIA = max(TXUBIGEOPROVINCIA, na.rm = T)) 
 ```
 
-
 Electores por distritos:
 
 ```{r}
@@ -351,7 +350,37 @@ data_finalGP14  = data_finalGP14 %>%
           mutate (validosGP14 = emitidosGP14-blancosnulosGP14) 
 ```
 
-OJO: todavia no tengo la información de tipo de organizacion politica. 
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGP14 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(partidosGP14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGP14 = left_join(data_finalGP14, partidos_politicos, by="TXUBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGP14 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(movimientosGP14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGP14 = left_join(data_finalGP14, mov_regionales, by="TXUBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGP14  = data_finalGP14 %>% 
+          mutate (por_partidosGP14 = (partidosGP14/validosGP14)*100,
+                  por_movimientosGP14 = (movimientosGP14/validosGP14)*100)
+
+data_finalGP14$por_partidosGP14[is.nan(data_finalGP14$por_partidosGP14)] = 0 
+data_finalGP14$por_movimientosGP14[is.nan(data_finalGP14$por_movimientosGP14)] = 0 
+```
+
 
 ###Ganadores GP
 
@@ -395,14 +424,14 @@ Votos ganador
 ```{r}
 primero = dataGP14 %>% group_by(TXUBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGP14=VOTOS)
 
-data_finalGP14 = left_join(data_finalGP14, primero[c(1,14)], by="TXUBIGEO") #join 
+data_finalGP14 = left_join(data_finalGP14, primero[c(1,15)], by="TXUBIGEO") #join 
 ```
 
 Votos segundo
 ```{r}
 segundo = dataGP14 %>% group_by(TXUBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGP14=VOTOS)
 
-data_finalGP14 = left_join(data_finalGP14, segundo[c(1,14)], by="TXUBIGEO") #join 
+data_finalGP14 = left_join(data_finalGP14, segundo[c(1,15)], by="TXUBIGEO") #join 
 ```
 
 Calculo concentración:
@@ -410,7 +439,7 @@ Calculo concentración:
 ```{r}
 data_finalGP14 = data_finalGP14 %>% mutate(concentracionGP14 = primeroGP14/validosGP14 + segundoGP14/validosGP14)
 
-data_finalGP14=data_finalGP14[-c(12,13)]
+data_finalGP14=data_finalGP14[-c(16,17)]
 ```
 
 
@@ -546,7 +575,37 @@ data_finalGL14  = data_finalGL14 %>%
           mutate (validosGL14 = emitidosGL14-blancosnulosGL14) 
 ```
 
-OJO: todavia no tengo la información de tipo de organizacion politica. 
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGL14 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(partidosGL14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGL14 = left_join(data_finalGL14, partidos_politicos, by="TXUBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGL14 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(TXUBIGEO) %>% 
+                summarise(movimientosGL14 = sum(VOTOS, na.rm = T)) 
+
+data_finalGL14 = left_join(data_finalGL14, mov_regionales, by="TXUBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGL14  = data_finalGL14 %>% 
+          mutate (por_partidosGL14 = (partidosGL14/validosGL14)*100,
+                  por_movimientosGL14 = (movimientosGL14/validosGL14)*100)
+
+data_finalGL14$por_partidosGL14[is.nan(data_finalGL14$por_partidosGL14)] = 0 
+data_finalGL14$por_movimientosGL14[is.nan(data_finalGL14$por_movimientosGL14)] = 0 
+```
+ 
 
 ### Ganadores GP
 
@@ -594,14 +653,14 @@ Votos ganador
 ```{r}
 primero = dataGL14 %>% group_by(TXUBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGL14=VOTOS)
 
-data_finalGL14 = left_join(data_finalGL14, primero[c(1,14)], by="TXUBIGEO") #join 
+data_finalGL14 = left_join(data_finalGL14, primero[c(1,15)], by="TXUBIGEO") #join 
 ```
 
 Votos segundo
 ```{r}
 segundo = dataGL14 %>% group_by(TXUBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGL14=VOTOS)
 
-data_finalGL14 = left_join(data_finalGL14, segundo[c(1,14)], by="TXUBIGEO") #join 
+data_finalGL14 = left_join(data_finalGL14, segundo[c(1,15)], by="TXUBIGEO") #join 
 ```
 
 Calculo concentración:
@@ -609,7 +668,7 @@ Calculo concentración:
 ```{r}
 data_finalGL14 = data_finalGL14 %>% mutate(concentracionGL14 = primeroGL14/validosGL14 + segundoGL14/validosGL14)
 
-data_finalGL14=data_finalGL14[-c(12,13)]
+data_finalGL14=data_finalGL14[-c(16,17)]
 ```
 
 

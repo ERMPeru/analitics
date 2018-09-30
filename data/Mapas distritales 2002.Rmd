@@ -729,6 +729,6 @@ data_final = full_join(data_final, datafinal02[-c(2,3)], by = c("TXUBIGEO" = "UB
 ```
 
 ```{r}
-#save(data_final, file = "data_final.rda")
+save(data_final, file = "data_final.rda")
 ```
 
