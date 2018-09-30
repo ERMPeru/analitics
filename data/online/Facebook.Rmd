@@ -1,19 +1,30 @@
----
-title: "R Notebook"
-output: html_notebook
----
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r}
-plot(cars)
+library(readxl)
+data=read_xlsx("facebookSet.xlsx")
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+Quito Cornejo:
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+```{r}
+data=data[-1,]
+```
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data, aes(x=antiguedad, y=setiembre, size=followers, color=following)) + geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Tiempo en twitter (years)") + 
+  geom_label_repel(aes(label = candidato),
+                  box.padding   = 0.3,
+                  segment.color = 'grey50',
+                  size=3) + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15') + scale_y_continuous(breaks = seq(0,20,5)) + scale_x_continuous(breaks=seq(0,8,2)) + xlim(0,8) + ylim(0,20)  + theme(
+panel.grid.minor = element_blank()
+)
+
+```
+
+
+
+
+
 
