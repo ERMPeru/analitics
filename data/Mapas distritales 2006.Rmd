@@ -1,0 +1,750 @@
+
+```{r}
+library(readxl)
+library(tidyverse)
+```
+
+##### GOBIERNO REGIONAL 2006
+
+Carga data: 
+
+```{r}
+dataGR06=read_xlsx("Tabla8-ERM2006-Regional.xlsx")
+head(dataGR06)
+```
+
+###ORGANIZACIONES POLITICAS:
+
+Organizaciones
+
+```{r}
+names(table(dataGR06$TIPOORGPOL))
+```
+
+```{r}
+organizacionesGR06 = dataGR06[c(9,10)]
+organizacionesGR06 = organizacionesGR06[!duplicated(organizacionesGR06),]
+```
+
+Total organizaciones a nivel regional:
+
+```{r}
+nrow(organizacionesGR06)
+```
+
+Por tipo:
+
+```{r}
+table(organizacionesGR06$TIPOORGPOL)
+```
+
+Partidos:
+
+```{r}
+names(table(organizacionesGR06[organizacionesGR06$TIPOORGPOL=="PARTIDO POLITICO",]$NOM_ORGPOLITICA))
+```
+
+###ORDENAR DATA:
+
+Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGR06$UBIGEOPROVINCIA=dataGR06$UBIGEO
+substr(dataGR06$UBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+dataGR06$UBIGEOREGION=dataGR06$UBIGEO
+substr(dataGR06$UBIGEOREGION,3,6)='0000'
+```
+
+
+```{r}
+ubigeos = dataGR06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(UBIGEOREGION = max(UBIGEOREGION, na.rm = T),
+                     UBIGEOPROVINCIA = max(UBIGEOPROVINCIA, na.rm = T)) 
+```
+
+Electores por distritos:
+
+```{r}
+electores = dataGR06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGR06 = max(NUMELECTORES, na.rm = T)) 
+
+data_finalGR06 = left_join(ubigeos,electores, by="UBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGR06 %>% group_by(UBIGEO) %>% 
+           summarise(emitidosGR06 = max(NUM_VOTOS_EMITIDOS, na.rm = T)) 
+
+data_finalGR06 = left_join(data_finalGR06, emitidos, by="UBIGEO") #join
+```
+
+Calcular ausentes: 
+
+```{r}
+data_finalGR06 = data_finalGR06 %>% 
+  mutate(ausentesGR06= electoresGR06 - emitidosGR06, 
+         por_ausentesGR06 = (ausentesGR06/electoresGR06)*100)
+```
+
+votos validos:
+
+```{r}
+validos = dataGR06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(validosGR06= sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGR06 = left_join(data_finalGR06, validos, by="UBIGEO") #join
+
+#Ojo, tengo casos con 0 votos validos.. estoy asumiento que esos son blancos y nulos
+```
+
+Votos blancos + nulos
+
+```{r}
+data_finalGR06 = data_finalGR06 %>% 
+  mutate(blancosnulosGR06 = emitidosGR06 - validosGR06, 
+         por_blancosnulosGR06 = (blancosnulosGR06/emitidosGR06)*100)
+```
+
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGR06 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(UBIGEO) %>% 
+                summarise(partidosGR06 = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGR06 = left_join(data_finalGR06, partidos_politicos, by="UBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGR06 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(UBIGEO) %>% 
+                summarise(movimientosGR06 = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGR06 = left_join(data_finalGR06, mov_regionales, by="UBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGR06  = data_finalGR06 %>% 
+          mutate (por_partidosGR06 = (partidosGR06/validosGR06)*100,
+                  por_movimientosGR06 = (movimientosGR06/validosGR06)*100) 
+
+data_finalGR06$por_partidosGR06[is.nan(data_finalGR06$por_partidosGR06)] = 0 
+data_finalGR06$por_movimientosGR06[is.nan(data_finalGR06$por_movimientosGR06)] = 0 
+
+data_finalGR06$por_partidosGR06=ifelse(data_finalGR06$por_blancosnulosGR06==100, NA,data_finalGR06$por_partidosGR06)
+
+data_finalGR06$por_movimientosGR06=ifelse(data_finalGR06$por_blancosnulosGR06==100, NA,data_finalGR06$por_movimientosGR06)
+```
+
+###Ganadores GR
+
+Eliminar:
+
+```{r}
+dataGR06= dataGR06[!dataGR06$TIPOORGPOL == "VOTOS EN BLANCO",]
+dataGR06= dataGR06[!dataGR06$TIPOORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla en según votos
+
+```{r}
+dataGR06<- dataGR06[order(dataGR06$UBIGEO, -dataGR06$NUM_VOTOS_ORGPOL),] 
+```
+
+```{r}
+ganadoresGR =dataGR06 %>% group_by(UBIGEOREGION,NOM_ORGPOLITICA) %>% summarise(votos = sum(NUM_VOTOS_ORGPOL, na.rm = T))  %>% mutate(ganadorGR06 = NOM_ORGPOLITICA)
+validosGR =dataGR06 %>% group_by(UBIGEOREGION) %>% summarise(votos_validos = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+ganadoresGR06 = left_join(ganadoresGR, validosGR, by="UBIGEOREGION") #join
+ganadoresGR06 = ganadoresGR06  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGR06 = ganadoresGR06[order(ganadoresGR06$UBIGEOREGION, -ganadoresGR06$por_voto),] 
+ganadoresGR06 = ganadoresGR06 %>% filter(row_number()==1) %>% select(UBIGEOREGION,ganadorGR06)
+ganadoresGR06 = ganadoresGR06[complete.cases(ganadoresGR06),]
+```
+
+
+```{r}
+data_finalGR06 = left_join(data_finalGR06, ganadoresGR06, by="UBIGEOREGION") #join 
+```
+
+###Indicadores políticos 
+
+###### Concentración:
+
+Votos ganador
+```{r}
+primero = dataGR06 %>% group_by(UBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGR06=NUM_VOTOS_ORGPOL)
+
+data_finalGR06 = left_join(data_finalGR06, primero[c(1,19)], by="UBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGR06 %>% group_by(UBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGR06=NUM_VOTOS_ORGPOL)
+
+data_finalGR06 = left_join(data_finalGR06, segundo[c(1,19)], by="UBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGR06 = data_finalGR06 %>% mutate(concentracionGR06 = primeroGR06/validosGR06 + segundoGR06/validosGR06)
+
+data_finalGR06=data_finalGR06[-c(16,17)]
+```
+
+###### NEP Y Herfindahl
+
+Calcular proporción de votos validos al cuadrado
+
+```{r}
+dataGR06$prop_votos2 = (dataGR06$NUM_VOTOS_ORGPOL/dataGR06$NUM_VOTOS_VAL)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGR06 %>% group_by(UBIGEO) %>% 
+  summarise(HerfindahlGR06 = sum(prop_votos2, na.rm = T),
+            NEPGR06 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGR06 = left_join(data_finalGR06, NEP, by="UBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGR06$HerfindahlGR06[data_finalGR06$HerfindahlGR06==0] = NA 
+data_finalGR06$NEPGR06[is.infinite(data_finalGR06$NEPGR06)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGR06[data_finalGR06$por_blancosnulosGR06 == 100,]$UBIGEO
+```
+
+```{r}
+head(data_finalGR06)
+```
+
+
+
+##### GOBIERNO PROVINCIAL 2006
+
+Carga data: 
+
+```{r}
+dataGP06=read_xlsx("Tabla5-ERM2006-Provincial.xlsx")
+head(dataGP06)
+```
+
+###ORGANIZACIONES POLITICAS:
+
+Organizaciones
+
+```{r}
+names(table(dataGP06$TIPOORGPOL))
+```
+
+```{r}
+organizacionesGP06 = dataGP06[c(9,10)]
+organizacionesGP06 = organizacionesGP06[!duplicated(organizacionesGP06),]
+```
+
+Total organizaciones a nivel regional:
+
+```{r}
+nrow(organizacionesGP06)
+```
+
+Por tipo:
+
+```{r}
+table(organizacionesGP06$TIPOORGPOL)
+```
+
+Partidos:
+
+```{r}
+names(table(organizacionesGP06[organizacionesGP06$TIPOORGPOL=="PARTIDO POLITICO",]$NOM_ORGPOLITICA))
+```
+
+###ORDENAR DATA:
+
+Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGP06$UBIGEOPROVINCIA=dataGP06$UBIGEO
+substr(dataGP06$UBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+dataGP06$UBIGEOREGION=dataGP06$UBIGEO
+substr(dataGP06$UBIGEOREGION,3,6)='0000'
+```
+
+
+```{r}
+ubigeos = dataGP06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(UBIGEOREGION = max(UBIGEOREGION, na.rm = T),
+                     UBIGEOPROVINCIA = max(UBIGEOPROVINCIA, na.rm = T)) 
+```
+
+Electores por distritos:
+
+```{r}
+electores = dataGP06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGP06 = max(NUMELECTORES, na.rm = T)) 
+
+data_finalGP06 = left_join(ubigeos,electores, by="UBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGP06 %>% group_by(UBIGEO) %>% 
+           summarise(emitidosGP06 = max(NUM_VOTOS_EMITIDOS, na.rm = T)) 
+
+data_finalGP06 = left_join(data_finalGP06, emitidos, by="UBIGEO") #join
+```
+
+Calcular ausentes: 
+
+```{r}
+data_finalGP06 = data_finalGP06 %>% 
+  mutate(ausentesGP06= electoresGP06 - emitidosGP06, 
+         por_ausentesGP06 = (ausentesGP06/electoresGP06)*100)
+```
+
+votos validos:
+
+```{r}
+validos = dataGP06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(validosGP06= sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGP06 = left_join(data_finalGP06, validos, by="UBIGEO") #join
+
+#Ojo, tengo casos con 0 votos validos.. estoy asumiento que esos son blancos y nulos
+```
+
+Votos blancos + nulos
+
+```{r}
+data_finalGP06 = data_finalGP06 %>% 
+  mutate(blancosnulosGP06 = emitidosGP06 - validosGP06, 
+         por_blancosnulosGP06 = (blancosnulosGP06/emitidosGP06)*100)
+```
+
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGP06 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(UBIGEO) %>% 
+                summarise(partidosGP06 = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGP06 = left_join(data_finalGP06, partidos_politicos, by="UBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGP06 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(UBIGEO) %>% 
+                summarise(movimientosGP06 = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+
+data_finalGP06 = left_join(data_finalGP06, mov_regionales, by="UBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGP06  = data_finalGP06 %>% 
+          mutate (por_partidosGP06 = (partidosGP06/validosGP06)*100,
+                  por_movimientosGP06 = (movimientosGP06/validosGP06)*100) 
+
+data_finalGP06$por_partidosGP06[is.nan(data_finalGP06$por_partidosGP06)] = 0 
+data_finalGP06$por_movimientosGP06[is.nan(data_finalGP06$por_movimientosGP06)] = 0 
+
+data_finalGP06$por_partidosGP06=ifelse(data_finalGP06$por_blancosnulosGP06==100, NA,data_finalGP06$por_partidosGP06)
+
+data_finalGP06$por_movimientosGP06=ifelse(data_finalGP06$por_blancosnulosGP06==100, NA,data_finalGP06$por_movimientosGP06)
+```
+
+###Ganadores GP
+
+Eliminar:
+
+```{r}
+dataGP06= dataGP06[!dataGP06$TIPOORGPOL == "VOTOS EN BLANCO",]
+dataGP06= dataGP06[!dataGP06$TIPOORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla en según votos
+
+```{r}
+dataGP06<- dataGP06[order(dataGP06$UBIGEO, -dataGP06$NUM_VOTOS_ORGPOL),] 
+```
+
+```{r}
+ganadoresGP =dataGP06 %>% group_by(UBIGEOPROVINCIA,NOM_ORGPOLITICA) %>% summarise(votos = sum(NUM_VOTOS_ORGPOL, na.rm = T))  %>% mutate(ganadorGP06 = NOM_ORGPOLITICA)
+validosGP =dataGP06 %>% group_by(UBIGEOPROVINCIA) %>% summarise(votos_validos = sum(NUM_VOTOS_ORGPOL, na.rm = T)) 
+ganadoresGP06 = left_join(ganadoresGP, validosGP, by="UBIGEOPROVINCIA") #join
+ganadoresGP06 = ganadoresGP06  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGP06 = ganadoresGP06[order(ganadoresGP06$UBIGEOPROVINCIA, -ganadoresGP06$por_voto),] 
+ganadoresGP06 = ganadoresGP06 %>% filter(row_number()==1) %>% select(UBIGEOPROVINCIA,ganadorGP06)
+ganadoresGP06 = ganadoresGP06[complete.cases(ganadoresGP06),]
+```
+
+```{r}
+data_finalGP06 = left_join(data_finalGP06, ganadoresGP06, by="UBIGEOPROVINCIA") #join 
+```
+
+###Indicadores políticos 
+
+###### Concentración:
+
+Votos ganador
+```{r}
+primero = dataGP06 %>% group_by(UBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGP06=NUM_VOTOS_ORGPOL)
+
+data_finalGP06 = left_join(data_finalGP06, primero[c(1,19)], by="UBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGP06 %>% group_by(UBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGP06=NUM_VOTOS_ORGPOL)
+
+data_finalGP06 = left_join(data_finalGP06, segundo[c(1,19)], by="UBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGP06 = data_finalGP06 %>% mutate(concentracionGP06 = primeroGP06/validosGP06 + segundoGP06/validosGP06)
+
+data_finalGP06=data_finalGP06[-c(16,17)]
+```
+
+###### NEP Y Herfindahl
+
+Calcular proporción de votos validos al cuadrado
+
+```{r}
+dataGP06$prop_votos2 = (dataGP06$NUM_VOTOS_ORGPOL/dataGP06$NUM_VOTOS_VAL)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGP06 %>% group_by(UBIGEO) %>% 
+  summarise(HerfindahlGP06 = sum(prop_votos2, na.rm = T),
+            NEPGP06 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGP06 = left_join(data_finalGP06, NEP, by="UBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGP06$HerfindahlGP06[data_finalGP06$HerfindahlGP06==0] = NA 
+data_finalGP06$NEPGP06[is.infinite(data_finalGP06$NEPGP06)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGP06[data_finalGP06$por_blancosnulosGP06 == 100,]$UBIGEO
+```
+
+```{r}
+head(data_finalGP06)
+```
+
+
+##### GOBIERNO DISTRITAL 2006
+
+Carga data: 
+
+```{r}
+dataGL06=read_xlsx("ERM2006_Resultados_Distrital.xlsx")
+head(dataGL06)
+```
+
+```{r}
+names(dataGL06) = c("UBIGEO","REGION", "PROVINCIA" , "DISTRITO", "NUMELECTORES" , "PORPARTICIPACION", "EMITIDOS", "VALIDOS", "ORGPOL", "TIPOORGPOL", "VOTOS", "PORVOTOS")
+```
+
+
+###ORGANIZACIONES POLITICAS:
+
+Organizaciones
+
+```{r}
+names(table(dataGL06$TIPOORGPOL))
+```
+
+```{r}
+organizacionesGL06 = dataGL06[c(9,10)]
+organizacionesGL06 = organizacionesGL06[!duplicated(organizacionesGL06),]
+```
+
+Total organizaciones a nivel regional:
+
+```{r}
+nrow(organizacionesGL06)
+```
+
+Por tipo:
+
+```{r}
+table(organizacionesGL06$TIPOORGPOL)
+```
+
+Partidos:
+
+```{r}
+names(table(organizacionesGL06[organizacionesGL06$TIPOORGPOL=="PARTIDO POLITICO",]$ORGPOL))
+```
+
+###ORDENAR DATA:
+
+Ubigeos
+
+```{r}
+#Ubigeo provincia: 
+dataGL06$UBIGEOPROVINCIA=dataGL06$UBIGEO
+substr(dataGL06$UBIGEOPROVINCIA,5,6)='00'
+
+#Ubigeo región: 
+dataGL06$UBIGEOREGION=dataGL06$UBIGEO
+substr(dataGL06$UBIGEOREGION,3,6)='0000'
+```
+
+```{r}
+ubigeos = dataGL06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(UBIGEOREGION = max(UBIGEOREGION, na.rm = T),
+                     UBIGEOPROVINCIA = max(UBIGEOPROVINCIA, na.rm = T)) 
+```
+
+Electores por distritos:
+
+```{r}
+electores = dataGL06 %>% 
+            group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(electoresGL06 = max(NUMELECTORES, na.rm = T)) 
+
+data_finalGL06 = left_join(ubigeos,electores, by="UBIGEO") #join
+```
+
+Votos emitidos por distritos:
+
+```{r}
+emitidos = dataGL06 %>% group_by(UBIGEO) %>% 
+           summarise(emitidosGL06 = max(EMITIDOS, na.rm = T)) 
+
+data_finalGL06 = left_join(data_finalGL06, emitidos, by="UBIGEO") #join
+```
+
+Calcular ausentes: 
+
+```{r}
+ausentes = dataGL06 %>% group_by(UBIGEO) %>% 
+           summarise(participacion = max(PORPARTICIPACION, na.rm = T))
+                     
+ausentes$ausentesGL06 = (1-ausentes$participacion)*100
+
+data_finalGL06 = left_join(data_finalGL06, ausentes[c(1,3)], by="UBIGEO") #join
+```
+
+votos validos:
+
+```{r}
+validos = dataGL06 %>% 
+           group_by(UBIGEO) %>% #seleccionar una fila por distrito
+           summarise(validosGL06= max(VALIDOS, na.rm = T)) 
+
+data_finalGL06 = left_join(data_finalGL06, validos, by="UBIGEO") #join
+
+#Ojo, tengo casos con 0 votos validos.. estoy asumiento que esos son blancos y nulos
+```
+
+Votos blancos + nulos
+
+```{r}
+data_finalGL06 = data_finalGL06 %>% 
+  mutate(blancosnulosGL06 = emitidosGL06 - validosGL06, 
+         por_blancosnulosGL06 = (blancosnulosGL06/emitidosGL06)*100)
+```
+
+votos partidos politicos:
+
+```{r}
+partidos_politicos = dataGL06 %>% filter(TIPOORGPOL == "PARTIDO POLITICO") %>%
+                group_by(UBIGEO) %>% 
+                summarise(partidosGL06 = sum(VOTOS, na.rm = T)) 
+
+data_finalGL06 = left_join(data_finalGL06, partidos_politicos, by="UBIGEO") #join
+```
+
+votos movimientos regionales:
+
+```{r}
+mov_regionales = dataGL06 %>% filter(TIPOORGPOL == "MOVIMIENTO REGIONAL") %>%
+                group_by(UBIGEO) %>% 
+                summarise(movimientosGL06 = sum(VOTOS, na.rm = T)) 
+
+data_finalGL06 = left_join(data_finalGL06, mov_regionales, by="UBIGEO") #join
+```
+
+porcentaje partidos/movimientos
+
+```{r}
+data_finalGL06  = data_finalGL06 %>% 
+          mutate (por_partidosGL06 = (partidosGL06/validosGL06)*100,
+                  por_movimientosGL06 = (movimientosGL06/validosGL06)*100) 
+
+data_finalGL06$por_partidosGL06[is.nan(data_finalGL06$por_partidosGL06)] = 0 
+data_finalGL06$por_movimientosGL06[is.nan(data_finalGL06$por_movimientosGL06)] = 0 
+
+data_finalGL06$por_partidosGL06=ifelse(data_finalGL06$por_blancosnulosGL06==100, NA,data_finalGL06$por_partidosGL06)
+
+data_finalGL06$por_movimientosGL06=ifelse(data_finalGL06$por_blancosnulosGL06==100, NA,data_finalGL06$por_movimientosGL06)
+```
+
+###Ganadores GP
+
+Eliminar:
+
+```{r}
+dataGL06= dataGL06[!dataGL06$ORGPOL == "VOTOS EN BLANCO",]
+dataGL06= dataGL06[!dataGL06$ORGPOL == "VOTOS NULOS",]
+```
+
+Ordenar tabla en según votos
+
+```{r}
+dataGL06<- dataGL06[order(dataGL06$UBIGEO, -dataGL06$VOTOS),] 
+```
+
+```{r}
+ganadoresGL =dataGL06 %>% group_by(UBIGEO,ORGPOL) %>% summarise(votos = sum(VOTOS, na.rm = T))  %>% mutate(ganadorGL06 = ORGPOL)
+validosGL =dataGL06 %>% group_by(UBIGEO) %>% summarise(votos_validos = sum(VOTOS, na.rm = T)) 
+ganadoresGL06 = left_join(ganadoresGL, validosGL, by="UBIGEO") #join
+ganadoresGL06 = ganadoresGL06  %>% mutate(por_voto = (votos/votos_validos)*100)
+ganadoresGL06 = ganadoresGL06[order(ganadoresGL06$UBIGEO, -ganadoresGL06$por_voto),]
+ganadoresGL06 = ganadoresGL06 %>% filter(row_number()==1) %>% select(UBIGEO,ganadorGL06)
+ganadoresGL06 = ganadoresGL06[complete.cases(ganadoresGL06),]
+```
+
+```{r}
+data_finalGL06 = left_join(data_finalGL06, ganadoresGL06, by="UBIGEO") #join 
+
+##Cuidar que los que tengan 100 de votos nulos y blancos no tengan partido
+
+data_finalGL06$ganadorGL06=ifelse(data_finalGL06$por_blancosnulosGL06==100, NA,data_finalGL06$ganadorGL06)
+```
+
+
+###Indicadores políticos 
+
+###### Concentración:
+
+Votos ganador
+```{r}
+primero = dataGL06 %>% group_by(UBIGEO) %>% filter(row_number()==1) %>% mutate(primeroGL06=VOTOS)
+
+data_finalGL06 = left_join(data_finalGL06, primero[c(1,15)], by="UBIGEO") #join 
+```
+
+Votos segundo
+```{r}
+segundo = dataGL06 %>% group_by(UBIGEO) %>% filter(row_number()==2) %>% mutate(segundoGL06=VOTOS)
+
+data_finalGL06 = left_join(data_finalGL06, segundo[c(1,15)], by="UBIGEO") #join 
+```
+
+Calculo concentración:
+
+```{r}
+data_finalGL06 = data_finalGL06 %>% mutate(concentracionGL06 = primeroGL06/validosGL06 + segundoGL06/validosGL06)
+
+data_finalGL06=data_finalGL06[-c(15,16)]
+
+data_finalGL06$concentracionGL06[is.nan(data_finalGL06$concentracionGL06)] = NA 
+```
+
+###### NEP Y Herfindahl
+
+Calcular proporción de votos validos al cuadrado
+
+```{r}
+dataGL06$prop_votos2 = (dataGL06$VOTOS/dataGL06$VALIDOS)^2
+```
+
+NEP y Herfindahl por distrito:
+
+```{r}
+NEP = dataGL06 %>% group_by(UBIGEO) %>% 
+  summarise(HerfindahlGL06 = sum(prop_votos2, na.rm = T),
+            NEPGL06 = 1/sum(prop_votos2, na.rm = T))
+
+data_finalGL06 = left_join(data_finalGL06, NEP, by="UBIGEO") #join 
+
+#cuidar casos sin votos validos
+data_finalGL06$HerfindahlGL06[data_finalGL06$HerfindahlGL06==0] = NA 
+data_finalGL06$NEPGL06[is.infinite(data_finalGL06$NEPGL06)] = NA 
+```
+
+CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
+
+```{r}
+data_finalGL06[data_finalGL06$por_blancosnulosGL06 == 100,]$UBIGEO
+```
+
+```{r}
+head(data_finalGL06)
+```
+
+
+## Merge: 
+
+```{r}
+datafinal06 = full_join(data_finalGR06, data_finalGP06[-c(2,3)], by="UBIGEO") #join
+datafinal06 = full_join(datafinal06, data_finalGL06[-c(2,3)], by="UBIGEO") #join 
+```
+
+### INDICADOR DE HOMOGENEIDAD VERTICAL
+
+```{r}
+datafinal06$HRegProv06 = ifelse(datafinal06$ganadorGR06 == datafinal06$ganadorGP06,1,0) ## relacion GR con GL
+
+datafinal06$HProvDist06 = ifelse(datafinal06$ganadorGP06 == datafinal06$ganadorGL06,1,0) ## relacion GP con GL
+
+datafinal06$HRegDist06 = ifelse(datafinal06$ganadorGR06 == datafinal06$ganadorGL06,1,0) ## relacion GR con GL
+```
+
+```{r}
+head(datafinal06)
+```
+
+
+##MERGE CON DATA TOTAL
+
+```{r}
+data_final = full_join(data_final, datafinal06[-c(2,3)], by = c("TXUBIGEO" = "UBIGEO")) #join
+```
+
+```{r}
+save(data_final, file = "data_final.rda")
+```
+

@@ -1,0 +1,44 @@
+Carga data: 
+
+```{r}
+load("data_final.Rda")
+```
+
+```{r}
+id=read.csv("ID MAPAS.csv")
+```
+
+```{r}
+data_final$TXUBIGEO = as.factor(data_final$TXUBIGEO)
+str(data_final$TXUBIGEO)
+```
+
+```{r}
+id$TXUBIGEO=ifelse(nchar(id$TXUBIGEO)==5, paste0(0,id$TXUBIGEO),id$TXUBIGEO)
+```
+
+```{r}
+id$TXUBIGEO= as.factor(id$TXUBIGEO)
+str(id$TXUBIGEO)
+```
+
+```{r}
+data=left_join(id[c(4:5)], data_final)
+```
+
+```{r}
+library(maptools)  
+library(rgeos)
+library(rgdal)
+library(sf)
+distritosPeru=readShapePoly("DISTRITO_16_03_2015.shp")
+```
+
+```{r}
+distritosPeru  <- merge(distritosPeru, data, by="ID") 
+```
+
+```{r}
+writeSpatialShape(distritosPeru, "DISTRITO_16_03_2015")
+```
+
