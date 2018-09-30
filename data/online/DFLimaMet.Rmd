@@ -2,31 +2,35 @@
 library(ggplot2)
 library(ggrepel)
 library(plotly)
+library(scales)
 ```
 
 #Candidatos y Actores Politicos en Lima Metropolitana 2014 en las redes sociales
 
-```{r include=FALSE}
-data=read.csv("DFLimaMet.csv")
-```
+### Twitter: 
 
 ```{r include=FALSE}
-head(data)
+data=read.csv("DFLimaMet_predeb.csv")
 ```
 
-```{r include=FALSE}
-colnames(data)= c( "candidato", "alias" ,"followers", "following", "antiguedad", "año", "meses", "agosto", "setiembre")
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$aumento = data$seguido_Sep - data$seguido_Ag
 ```
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data[data$setiembre >0,], aes(x=antiguedad, y=setiembre, size=followers, color=following)) + geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Tiempo en twitter (years)") + 
+colnames(data)= c( "x", "candidato", "alias" ,"followers_Sep", "following_Sep", "antiguedad",  "meses", "setiembre", "followers_Ag", "following_Ag", "Nuevos_Followers")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad)) + geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
   geom_label_repel(aes(label = candidato),
                   box.padding   = 0.3,
                   segment.color = 'grey50',
-                  size=3) + 
-scale_color_gradient(low = '#fcae91', high = '#a50f15') + scale_y_continuous(breaks = seq(0,20,5)) + scale_x_continuous(breaks=seq(0,8,2)) + xlim(0,8) + ylim(0,20)  + theme(
-panel.grid.minor = element_blank()
+                  size=3) + scale_size(labels = comma)  + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15') + theme(
+panel.grid.minor = element_blank() 
+
 )
 
 ```
@@ -36,8 +40,42 @@ panel.grid.minor = element_blank()
 x <- data[data$setiembre >0,]$candidato
 hovertxt <- paste("Candidato:", x)
 
-graph <- ggplot(data[data$agosto >0,], aes(x=antiguedad, y=setiembre, size=followers, color=following,text = hovertxt))+ geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Tiempo en twitter (years)") + 
-scale_color_gradient(low = '#fcae91', high = '#a50f15') + scale_y_continuous(breaks = seq(0,20,5)) + scale_x_continuous(breaks=seq(0,8,2)) + xlim(0,8) + ylim(0,20) 
+graph <- ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad,text = hovertxt))+ geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15')
+
+p <- ggplotly(graph)
+
+p
+```
+
+## Facebook:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(readxl)
+datafb=read_xlsx("facebookSet.xlsx")
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(datafb, aes(x=talking, y=setiembre, size=likesPage, color=totPost)) + geom_point() + ggtitle("Utilizan facebook los candidatos con mayor intencion de voto en Lima?") + ylab("% voto") + xlab("@Talking") + 
+  geom_label_repel(aes(label = X__1),
+                  box.padding   = 0.3,
+                  segment.color = 'grey50',
+                  size=3) + scale_size(labels = comma) + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15')  + theme(
+panel.grid.minor = element_blank() 
+
+)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+x <- datafb$X__1
+hovertxt <- paste("Candidato:", x)
+
+graph <- ggplot(datafb, aes(x=talking, y=setiembre, size=likesPage, color=totPost,text = hovertxt))+ geom_point() + ggtitle("Utilizan facebook los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("@Talking") + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15') 
 
 p <- ggplotly(graph)
 
