@@ -1,0 +1,19 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(ggplot2)
+library(tidyr)
+library(tidyverse)
+library(plotly)
+```
+
+###Urresti Data Agosto
+
+```{r include=FALSE}
+dataURR=read.csv("urresti_ago_data.csv",stringsAsFactors = F)
+dataURR$date=as.POSIXct(dataURR$fecha,format="%Y-%m-%d %H:%M:%S")
+dataURR$fecha=as.Date(substring(dataURR$fecha,1,10), "%Y-%m-%d")
+
+dataPlotURR=dataURR[,-c(5)]
+dataPlotURR=dataPlotURR[!duplicated(dataPlotURR), ]
+dataPlotURR=dataPlotURR %>% gather(variable, value, Positividad:ReTweets)
+head(dataPlotURR)
+```

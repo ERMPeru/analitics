@@ -1,0 +1,155 @@
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(ggplot2)
+library(tidyr)
+library(tidyverse)
+library(plotly)
+```
+
+###Daniel Urresti 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Data:
+
+dataURR1=read.csv("urresti_ago_data.csv",stringsAsFactors = F)
+dataURR1$momento = "Momento 1: 15/07 al 31/08"
+
+dataURR2=read.csv("urresti_predeb_data.csv",stringsAsFactors = F)
+dataURR2$momento = "Momento 2: 01/09 - 23/09"
+
+dataURR3=read.csv("DanielUrresti1_afterdeb1_data.csv",stringsAsFactors = F)
+dataURR3$momento = "Momento 3: 24/09 - 29/09"
+
+dataURR= rbind(dataURR1, dataURR2, dataURR3) #Juntar
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Transformar:
+dataURR$date=as.POSIXct(dataURR$fecha,format="%Y-%m-%d %H:%M:%S")
+dataURR$fecha=as.Date(substring(dataURR$fecha,1,10), "%Y-%m-%d")
+dataURR=dataURR[,-c(6,8)]
+dataURR=dataURR[!duplicated(dataURR), ]
+dataURR=dataURR %>% gather(variable, value, Likes:Positividad)
+head(dataURR)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Gráfico: 
+
+ggplot(dataURR, aes(x = fecha, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~momento,scales = "free") +theme(legend.position="none")+
+    ggtitle("Tweets Urresti") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold")) 
+```
+
+### Jorge Muñoz
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Data: 
+dataMUN1=read.csv("JorgeMunozAP_ago_data.csv",stringsAsFactors = F)
+dataMUN1$momento = "Momento 1: 15/07 al 31/08"
+
+dataMUN2=read.csv("JorgeMunozAP_predeb_data.csv",stringsAsFactors = F)
+dataMUN2$momento = "Momento 2: 01/09 - 23/09"
+
+dataMUN3=read.csv("JorgeMunozAP_afterdeb1_data.csv",stringsAsFactors = F)
+dataMUN3$momento = "Momento 3: 24/09 - 29/09"
+
+dataMUN= rbind(dataMUN1, dataMUN2, dataMUN3) #Juntar
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Transformar:
+dataMUN$date=as.POSIXct(dataMUN$fecha,format="%Y-%m-%d %H:%M:%S")
+dataMUN$fecha=as.Date(substring(dataMUN$fecha,1,10), "%Y-%m-%d")
+dataMUN=dataMUN[,-c(6,8)]
+dataMUN=dataMUN[!duplicated(dataMUN), ]
+dataMUN=dataMUN %>% gather(variable, value, Likes:Positividad)
+head(dataMUN)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Gráfico:
+ggplot(dataMUN, aes(x = fecha, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~momento,scales = "free") +theme(legend.position="none")+
+    ggtitle("Tweets Munoz Agosto") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
+
+###Renzo Reggiardo
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Data: 
+dataREG1=read.csv("renzo_ago_data.csv",stringsAsFactors = F)
+dataREG1$momento = "Momento 1: 15/07 al 31/08"
+
+dataREG2=read.csv("renzo_predeb_data.csv",stringsAsFactors = F)
+dataREG2$momento = "Momento 2: 01/09 - 23/09"
+
+dataREG3=read.csv("Renzo_Reggiardo_afterdeb1_data.csv",stringsAsFactors = F)
+dataREG3$momento = "Momento 3: 24/09 - 29/09"
+
+dataREG= rbind(dataREG1, dataREG2, dataREG3) #Juntar
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Transformar:
+dataREG$date=as.POSIXct(dataREG$fecha,format="%Y-%m-%d %H:%M:%S")
+dataREG$fecha=as.Date(substring(dataREG$fecha,1,10), "%Y-%m-%d")
+dataREG=dataREG[,-c(6,8)]
+dataREG=dataREG[!duplicated(dataREG), ]
+dataREG=dataREG %>% gather(variable, value, Likes:Positividad)
+head(dataREG)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Gráfico: 
+ggplot(dataREG, aes(x = fecha, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~momento,scales = "free") +theme(legend.position="none")+
+    ggtitle("Tweets Reggiardo") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
+
+###Ricardo Belmont
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Data:
+dataBEL1=read.csv("rbc_ago_data.csv",stringsAsFactors = F)
+dataBEL1$momento = "Momento 1: 15/07 al 31/08"
+
+dataBEL2=read.csv("rbc_predeb_data.csv",stringsAsFactors = F)
+dataBEL2$momento = "Momento 2: 01/09 - 23/09"
+
+dataBEL3=read.csv("RicardoBelmontC_afterdeb1_data.csv",stringsAsFactors = F)
+dataBEL3$momento = "Momento 3: 24/09 - 29/09"
+
+dataBEL= rbind(dataBEL1, dataBEL2, dataBEL3) #Juntar
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+#Transformar:
+dataBEL$date=as.POSIXct(dataBEL$fecha,format="%Y-%m-%d %H:%M:%S")
+dataBEL$fecha=as.Date(substring(dataBEL$fecha,1,10), "%Y-%m-%d")
+dataBEL=dataBEL[,-c(6,8)]
+dataBEL=dataBEL[!duplicated(dataBEL), ]
+dataBEL=dataBEL %>% gather(variable, value, Likes:Positividad)
+head(dataBEL)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+#Gráfico: 
+ggplot(dataBEL, aes(x = fecha, y = value)) + 
+    geom_line(aes(color = variable), size = 1) +
+    facet_grid(variable~momento,scales = "free") +theme(legend.position="none")+
+    ggtitle("Tweets Belmont") +
+  theme(plot.title = element_text(hjust = 0.5,lineheight=.8, face="bold"))
+```
