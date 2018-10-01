@@ -18,7 +18,7 @@ data=read.csv("dataAfertdep.csv")
 g <- ggplot(data=data,
         aes(x=reorder(candidato, Nuevos_Followers1), y=Nuevos_Followers1,group=1)) +
   geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
-    theme(text = element_text(size=10))+ coord_flip() + ggtitle("Momento 1: Antes del debate") +
+    theme(text = element_text(size=9))+ coord_flip() + ggtitle("Entre 01/09 al 23/09 (antes debate 1)") +
   ylim(0, 4000)
 ```
 
@@ -26,7 +26,7 @@ g <- ggplot(data=data,
 d <- ggplot(data=data,
        aes(x=reorder(candidato, Nuevos_Followers2), y=Nuevos_Followers2,group=1)) +
   geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
-    theme(text = element_text(size=10))+ coord_flip() + ggtitle("Momento 2: Despues del debate")+
+    theme(text = element_text(size=9))+ coord_flip() + ggtitle("Entre 24/09 al 29/09 (antes debate 2)")+
   ylim(0, 4000)
 ```
 
