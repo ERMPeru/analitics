@@ -3,36 +3,44 @@ library(ggplot2)
 library(ggrepel)
 library(plotly)
 library(scales)
+library(ggpubr)
 ```
 
-#Candidatos y Actores Politicos en Lima Metropolitana 2018 en las redes sociales
+#Candidatos y Actores Politicos en Lima Metropolitana 2018 en Twitter
 
-### Twitter: 
+###Crecimiento de followers: 
 
 ```{r include=FALSE}
-data=read.csv("DFLimaMet_predeb.csv")
+data=read.csv("dataAfertdep.csv")
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-data$aumento = data$seguido_Sep - data$seguido_Ag
+g <- ggplot(data=data,
+        aes(x=reorder(candidato, Nuevos_Followers1), y=Nuevos_Followers1,group=1)) +
+  geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
+    theme(text = element_text(size=10))+ coord_flip() + ggtitle("Momento 1: Antes del debate") +
+  ylim(0, 4000)
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-colnames(data)= c( "x", "candidato", "alias" ,"followers_Sep", "following_Sep", "antiguedad",  "meses", "setiembre", "followers_Ag", "following_Ag", "Nuevos_Followers")
+d <- ggplot(data=data,
+       aes(x=reorder(candidato, Nuevos_Followers2), y=Nuevos_Followers2,group=1)) +
+  geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
+    theme(text = element_text(size=10))+ coord_flip() + ggtitle("Momento 2: Despues del debate")+
+  ylim(0, 4000)
 ```
 
-Crecimiento en las últimas tres semanas:
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data=data,
-       aes(x=reorder(candidato, Nuevos_Followers), y=Nuevos_Followers,group=1)) +
-  geom_bar(stat="identity")+ ggtitle("Crecimiento en tres semanas") + xlab("") + ylab("Nuevos Followers")+
-    theme(text = element_text(size=14))+ coord_flip() 
+ggarrange(g, d ,
+          ncol = 2, nrow = 1)
 ```
 
+###Crecimiento de followers e intención de voto
+
+Crecimiento antes y después del debate: 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad)) + geom_point() + ggtitle("Han crecido los candidatos en la red?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
+ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers2, y=setiembre, size=following_afdeb, color=antiguedad)) + geom_point() + ggtitle("Han crecido los candidatos en la red luego del debate?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
   geom_label_repel(aes(label = candidato),
                   box.padding   = 0.3,
                   segment.color = 'grey50',
@@ -49,48 +57,10 @@ panel.grid.minor = element_blank()
 x <- data[data$setiembre >0,]$candidato
 hovertxt <- paste("Candidato:", x)
 
-graph <- ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad,text = hovertxt))+ geom_point() + ggtitle("Han crecido los candidatos en la red?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
+graph <- ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers2, y=setiembre, size=following_afdeb, color=antiguedad,text = hovertxt))+ geom_point() + ggtitle("Han crecido los candidatos en la red luego del debate?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
 scale_color_gradient(low = '#fcae91', high = '#a50f15')
 
 p <- ggplotly(graph)
 
 p
 ```
-
-## Facebook:
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(readxl)
-datafb=read_xlsx("facebookSet.xlsx")
-```
-
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(datafb, aes(x=talking, y=setiembre, size=likesPage, color=totPost)) + geom_point() + ggtitle("Utilizan facebook los candidatos con mayor intencion de voto en Lima?") + ylab("% voto") + xlab("@Talking") + 
-  geom_label_repel(aes(label = X__1),
-                  box.padding   = 0.3,
-                  segment.color = 'grey50',
-                  size=3) + scale_size(labels = comma) + 
-scale_color_gradient(low = '#fcae91', high = '#a50f15')  + theme(
-panel.grid.minor = element_blank() 
-
-)
-
-```
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-
-x <- datafb$X__1
-hovertxt <- paste("Candidato:", x)
-
-graph <- ggplot(datafb, aes(x=talking, y=setiembre, size=likesPage, color=totPost,text = hovertxt))+ geom_point() + ggtitle("Utilizan facebook los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("@Talking") + 
-scale_color_gradient(low = '#fcae91', high = '#a50f15') 
-
-p <- ggplotly(graph)
-
-p
-```
-
-
-
-

@@ -1,21 +1,41 @@
-,candidato,alias,seguido_Por,siguiendo_A,Antiguedad_años,meses
-0,Jorge Muñoz,JorgeMunozAP,23710,453,8,2
-1,Jaime E Salinas,jaimesalinas80,4628,39,6,8
-2,Julio Gagó Pérez,JulioGagoPe,22112,1521,8,10
-3,Enrique Cornejo,ENRIQUECORNEJOR,39476,1468,8,1
-4,Enrique Fernández Chacón,EnriquePorLima,109,211,0,2
-5,Ditel Columbus,DitelColumbus,16130,1080,3,5
-6,Gustavo Guerra,GGG_pe,14077,537,7,8
-7,Juan Carlos Zurek,juancarloszurek,1775,435,8,10
-8,Alberto Beingolea,BeingoleaA,20323,404,4,11
-9,Ricardo Belmont C.,RicardoBelmontC,5758,150,8,2
-10,Enrique Ocrospoma,kikeocrospoma,2969,548,8,5
-11,Renzo Reggiardo,Renzo_Reggiardo,33691,192,7,11
-12,Jorge Villacorta,mikausape,206,745,0,3
-13,Daniel Urresti,DanielUrresti1,354065,387,4,6
-14,Humberto Lay Sun,humberto_lay,18333,147,7,1
-15,Manuel Velarde,ManuelVelardeD,9650,190,2,11
-16,Luis Castañeda Pardo,luchocastanedap,6998,635,7,8
-17,Jose Luis Gil,JoseLuisGil1000,6323,4642,1,11
-18,La Capuñay,EstherCapunay,8127,711,6,11
-19,Roberto Gómez Baca,GomezBacaxLima,1068,122,2,7
+candidato,alias,siguiendomomento2,siguiendomomento1,Momento
+Beingolea,BeingoleaA,19941,19266,Momento1
+Belmont,RicardoBelmontC,5604,5038,Momento1
+Capunay,EstherCapunay,8014,7571,Momento1
+Castaneda,luchocastanedap,6865,6558,Momento1
+Columbus,DitelColumbus,16047,15822,Momento1
+Cornejo,ENRIQUECORNEJOR,39373,39083,Momento1
+Fernandez,EnriquePorLima,74,34,Momento1
+Gago,JulioGagoPe,22072,22032,Momento1
+Gil,JoseLuisGil1000,6293,6063,Momento1
+Gomez Baca,GomezBacaxLima,1049,1022,Momento1
+Guerra,GGG_pe,13513,11459,Momento1
+Lay,humberto_lay,18257,18077,Momento1
+Munoz,JorgeMunozAP,20139,18488,Momento1
+Ocrospoma,kikeocrospoma,2944,2862,Momento1
+Reggiardo,Renzo_Reggiardo,33396,32698,Momento1
+Salinas,jaimesalinas80,4568,4397,Momento1
+Urresti,DanielUrresti1,353536,352189,Momento1
+Velarde,ManuelVelardeD,8474,6341,Momento1
+Villacorta,mikausape,188,132,Momento1
+Zurek,juancarloszurek,1745,1680,Momento1
+Beingolea,BeingoleaA,20323,19941,Momento2
+Belmont,RicardoBelmontC,5758,5604,Momento2
+Capunay,EstherCapunay,8127,8014,Momento2
+Castaneda,luchocastanedap,6998,6865,Momento2
+Columbus,DitelColumbus,16130,16047,Momento2
+Cornejo,ENRIQUECORNEJOR,39476,39373,Momento2
+Fernandez,EnriquePorLima,109,74,Momento2
+Gago,JulioGagoPe,22112,22072,Momento2
+Gil,JoseLuisGil1000,6323,6293,Momento2
+Gomez Baca,GomezBacaxLima,1068,1049,Momento2
+Guerra,GGG_pe,14077,13513,Momento2
+Lay,humberto_lay,18333,18257,Momento2
+Munoz,JorgeMunozAP,23710,20139,Momento2
+Ocrospoma,kikeocrospoma,2969,2944,Momento2
+Reggiardo,Renzo_Reggiardo,33691,33396,Momento2
+Salinas,jaimesalinas80,4628,4568,Momento2
+Urresti,DanielUrresti1,354065,353536,Momento2
+Velarde,ManuelVelardeD,9650,8474,Momento2
+Villacorta,mikausape,206,188,Momento2
+Zurek,juancarloszurek,1775,1745,Momento2
