@@ -5,7 +5,7 @@ library(plotly)
 library(scales)
 ```
 
-#Candidatos y Actores Politicos en Lima Metropolitana 2014 en las redes sociales
+#Candidatos y Actores Politicos en Lima Metropolitana 2018 en las redes sociales
 
 ### Twitter: 
 
@@ -17,13 +17,22 @@ data=read.csv("DFLimaMet_predeb.csv")
 data$aumento = data$seguido_Sep - data$seguido_Ag
 ```
 
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 colnames(data)= c( "x", "candidato", "alias" ,"followers_Sep", "following_Sep", "antiguedad",  "meses", "setiembre", "followers_Ag", "following_Ag", "Nuevos_Followers")
 ```
 
+Crecimiento en las últimas tres semanas:
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad)) + geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
+ggplot(data=data,
+       aes(x=reorder(candidato, Nuevos_Followers), y=Nuevos_Followers,group=1)) +
+  geom_bar(stat="identity")+ ggtitle("Crecimiento en tres semanas") + xlab("") + ylab("Nuevos Followers")+
+    theme(text = element_text(size=14))+ coord_flip() 
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad)) + geom_point() + ggtitle("Han crecido los candidatos en la red?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
   geom_label_repel(aes(label = candidato),
                   box.padding   = 0.3,
                   segment.color = 'grey50',
@@ -40,7 +49,7 @@ panel.grid.minor = element_blank()
 x <- data[data$setiembre >0,]$candidato
 hovertxt <- paste("Candidato:", x)
 
-graph <- ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad,text = hovertxt))+ geom_point() + ggtitle("Utilizan twitter los candidatos con mayor intencion de voto en Lima?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
+graph <- ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers, y=setiembre, size=following_Sep, color=antiguedad,text = hovertxt))+ geom_point() + ggtitle("Han crecido los candidatos en la red?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + 
 scale_color_gradient(low = '#fcae91', high = '#a50f15')
 
 p <- ggplotly(graph)
