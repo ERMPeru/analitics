@@ -241,6 +241,16 @@ data_finalGR10[data_finalGR10$por_blancosnulosGR10 == 100,]$UBIGEO
 ```
 
 ```{r}
+data2GR10=dataGR10[complete.cases(dataGR10$prop_votos2),]
+data2GR10 = data2GR10[c(19,9)]
+data2GR10 =unique(data2GR10)
+
+listasGR10=data2GR10 %>% group_by(UBIGEOREGION) %>%  summarise(listasGR10=n())
+
+data_finalGR10 = left_join(data_finalGR10, listasGR10, by="UBIGEOREGION") #join 
+```
+
+```{r}
 head(data_finalGR10)
 ```
 
@@ -468,6 +478,16 @@ CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
 
 ```{r}
 data_finalGP10[data_finalGP10$por_blancosnulosGP10 == 100,]$UBIGEO
+```
+
+```{r}
+data2GP10=dataGP10[complete.cases(dataGP10$prop_votos2),]
+data2GP10 = data2GP10[c(18,9)]
+data2GP10 =unique(data2GP10)
+
+listasGP10=data2GP10 %>% group_by(UBIGEOPROVINCIA) %>%  summarise(listasGP10=n())
+
+data_finalGP10 = left_join(data_finalGP10, listasGP10, by="UBIGEOPROVINCIA") #join 
 ```
 
 ```{r}
@@ -706,6 +726,16 @@ CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
 
 ```{r}
 data_finalGL10[data_finalGL10$por_blancosnulosGL10 == 100,]$UBIGEO
+```
+
+```{r}
+data2GL10=dataGL10[complete.cases(dataGL10$prop_votos2),]
+data2GL10 = data2GL10[c(1,7)]
+data2GL10 =unique(data2GL10)
+
+listasGL10=data2GL10 %>% group_by(UBIGEO) %>%  summarise(listasGL10=n())
+
+data_finalGL10 = left_join(data_finalGL10, listasGL10, by="UBIGEO") #join 
 ```
 
 ```{r}

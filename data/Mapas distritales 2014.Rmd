@@ -263,6 +263,16 @@ data_finalGR14[data_finalGR14$por_blancosnulosGR14 == 100,]$TXUBIGEO
 ```
 
 ```{r}
+data2GR14=dataGR14[complete.cases(dataGR14$prop_votos2),]
+data2GR14 = data2GR14[c(14,5)]
+data2GR14 =unique(data2GR14)
+
+listasGR14=data2GR14 %>% group_by(TXUBIGEOREGION) %>%  summarise(listasGR14=n())
+
+data_finalGR14 = left_join(data_finalGR14, listasGR14, by="TXUBIGEOREGION") #join 
+```
+
+```{r}
 head(data_finalGR14)
 ```
 
@@ -483,6 +493,16 @@ CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
 
 ```{r}
 data_finalGP14[data_finalGP14$por_blancosnulosGP14 == 100,]$TXUBIGEO
+```
+
+```{r}
+data2GP14=dataGP14[complete.cases(dataGP14$prop_votos2),]
+data2GP14 = data2GP14[c(13,5)]
+data2GP14 =unique(data2GP14)
+
+listasGP14=data2GP14 %>% group_by(TXUBIGEOPROVINCIA) %>%  summarise(listasGP14=n())
+
+data_finalGP14 = left_join(data_finalGP14, listasGP14, by="TXUBIGEOPROVINCIA") #join 
 ```
 
 ```{r}
@@ -712,6 +732,16 @@ CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
 
 ```{r}
 data_finalGL14[data_finalGL14$por_blancosnulosGL14 == 100,]$TXUBIGEO
+```
+
+```{r}
+data2GL14=dataGL14[complete.cases(dataGL14$prop_votos2),]
+data2GL14 = data2GL14[c(1,5)]
+data2GL14 =unique(data2GL14)
+
+listasGL14=data2GL14 %>% group_by(TXUBIGEO) %>%  summarise(listasGL14=n())
+
+data_finalGL14 = left_join(data_finalGL14, listasGL14, by="TXUBIGEO") #join 
 ```
 
 ```{r}

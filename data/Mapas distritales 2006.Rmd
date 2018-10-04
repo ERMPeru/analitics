@@ -233,6 +233,16 @@ data_finalGR06[data_finalGR06$por_blancosnulosGR06 == 100,]$UBIGEO
 ```
 
 ```{r}
+data2GR06=dataGR06[complete.cases(dataGR06$prop_votos2),]
+data2GR06 = data2GR06[c(18,9)]
+data2GR06 =unique(data2GR06)
+
+listasGR06=data2GR06 %>% group_by(UBIGEOREGION) %>%  summarise(listasGR06=n())
+
+data_finalGR06 = left_join(data_finalGR06, listasGR06, by="UBIGEOREGION") #join 
+```
+
+```{r}
 head(data_finalGR06)
 ```
 
@@ -463,6 +473,16 @@ CUIDADO CON LOS CASOS QUE TIENEN 100% DE VOTOS NULOS Y BLANCOS:
 
 ```{r}
 data_finalGP06[data_finalGP06$por_blancosnulosGP06 == 100,]$UBIGEO
+```
+
+```{r}
+data2GP06=dataGP06[complete.cases(dataGP06$prop_votos2),]
+data2GP06 = data2GP06[c(17,9)]
+data2GP06 =unique(data2GP06)
+
+listasGP06=data2GP06 %>% group_by(UBIGEOPROVINCIA) %>%  summarise(listasGP06=n())
+
+data_finalGP06 = left_join(data_finalGP06, listasGP06, by="UBIGEOPROVINCIA") #join 
 ```
 
 ```{r}
@@ -712,6 +732,16 @@ data_finalGL06[data_finalGL06$por_blancosnulosGL06 == 100,]$UBIGEO
 ```
 
 ```{r}
+data2GL06=dataGL06[complete.cases(dataGL06$prop_votos2),]
+data2GL06 = data2GL06[c(1,9)]
+data2GL06 =unique(data2GL06)
+
+listasGL06=data2GL06 %>% group_by(UBIGEO) %>%  summarise(listasGL06=n())
+
+data_finalGL06 = left_join(data_finalGL06, listasGL06, by="UBIGEO") #join 
+```
+
+```{r}
 head(data_finalGL06)
 ```
 
@@ -739,6 +769,10 @@ head(datafinal06)
 
 
 ##MERGE CON DATA TOTAL
+
+```{r}
+load("data_final.Rda")
+```
 
 ```{r}
 data_final = full_join(data_final, datafinal06[-c(2,3)], by = c("TXUBIGEO" = "UBIGEO")) #join
