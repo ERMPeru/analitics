@@ -233,7 +233,7 @@ data_finalGR02[data_finalGR02$por_blancosnulosGR02 == 100,]$UBIGEO
 head(data_finalGR02)
 ```
 
-##### GOBIERNO PROVINCIAL 2010
+##### GOBIERNO PROVINCIAL 2002
 
 Carga data: 
 
