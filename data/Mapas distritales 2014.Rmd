@@ -180,8 +180,8 @@ Hay algunos que tuvieron que ir a segunda vuelta y ganaron otras organizaciones:
 ganadoresGR14[2,2] = "MOVIMIENTO INDEPENDIENTE REGIONAL PURO ANCASH"#ANCASH
 ganadoresGR14[3,2] = "MOVIMIENTO INDEPENDIENTE FUERZA CAMPESINA REGIONAL" #APURIMAC
 ganadoresGR14[4,2] = "AREQUIPA, TRADICION Y FUTURO" #AREQUIPA
-ganadoresGR14[8,2] = "KAUSACHUN CUSCO" #CUSCO
-ganadoresGR14[22,2] = "FUERZA POPULAR" #SAN MARTIN
+ganadoresGR14[7,2] = "KAUSACHUN CUSCO" #CUSCO
+ganadoresGR14[21,2] = "FUERZA POPULAR" #SAN MARTIN
 ```
 
 ```{r}
