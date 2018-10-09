@@ -1,16 +1,16 @@
 Carga data: 
 
 ```{r}
-load("data_final.Rda")
+load("data_distrital.Rda")
 ```
 
 ```{r}
-id=read.csv("ID MAPAS.csv")
+id=read.csv("ID MAPAS DISTRITAL.csv")
 ```
 
 ```{r}
-data_final$TXUBIGEO = as.factor(data_final$TXUBIGEO)
-str(data_final$TXUBIGEO)
+data_distrital$TXUBIGEOPROVINCIA = as.factor(data_distrital$TXUBIGEOPROVINCIA)
+str(data_distrital$TXUBIGEOPROVINCIA)
 ```
 
 ```{r}
@@ -23,8 +23,18 @@ str(id$TXUBIGEO)
 ```
 
 ```{r}
-data=left_join(id[c(4:5)], data_final)
+data_distrital=left_join(id[c(4,5)], data_distrital)
 ```
+
+```{r}
+data_distrital=data_distrital[-c(21,57,39)]
+```
+
+
+```{r}
+save(data_distrital, file = "data_distrital.rda")
+```
+
 
 ```{r}
 library(maptools)  
