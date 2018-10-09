@@ -15,7 +15,7 @@ table, td, th {
 
 
 <a href="https://escience.washington.edu/research-project/opening-data-peru/">
-<img src="https://github.com/ERMPeru/elecciones2016/raw/master/headerLogo.png" width="1000"></a>
+<img src="https://github.com/ERMPeru/elecciones2018/raw/master/headerLogo.png" width="1000"></a>
 
 
 # **MAPAS DE ELECCIONES SUBNACIONALES**
@@ -72,6 +72,49 @@ limaframe=rgdal::readOGR("justLima.shp")
 ```{r}
 plgs  <- merge(plgs, data, by="ID") 
 ```
+```{r}
+pts = merge(pts, data, by="ID") 
+```
+
+```{r}
+
+ptslistas=pts[,grep("^lis",names(plgs),
+                value=TRUE)]
+```
+
+```{r}
+names(ptslistas)
+```
+```{r}
+summary(ptslistas$listasGL14)
+summary(ptslistas$listasGL10)
+summary(ptslistas$listasGL06)
+summary(ptslistas$listasGL02)
+```
+
+
+```{r}
+much02=ptslistas[!is.na(ptslistas$listasGL02) & ptslistas$listasGL02 >= 11,]
+much06=ptslistas[!is.na(ptslistas$listasGL06) & ptslistas$listasGL06 >= 11,]
+much10=ptslistas[!is.na(ptslistas$listasGL10) & ptslistas$listasGL10 >= 11,]
+much14=ptslistas[!is.na(ptslistas$listasGL14) & ptslistas$listasGL14 >= 11,]
+```
+
+```{r}
+muchp02=ptslistas[!is.na(ptslistas$listasGP02) & ptslistas$listasGP02 >= 11,]
+muchp06=ptslistas[!is.na(ptslistas$listasGP06) & ptslistas$listasGP06 >= 11,]
+muchp10=ptslistas[!is.na(ptslistas$listasGP10) & ptslistas$listasGP10 >= 11,]
+muchp14=ptslistas[!is.na(ptslistas$listasGP14) & ptslistas$listasGP14 >= 11,]
+```
+
+
+```{r}
+muchr02=ptslistas[!is.na(ptslistas$listasGR02) & ptslistas$listasGR02 >= 11,]
+muchr06=ptslistas[!is.na(ptslistas$listasGR06) & ptslistas$listasGR06 >= 11,]
+muchr10=ptslistas[!is.na(ptslistas$listasGR10) & ptslistas$listasGR10 >= 11,]
+muchr14=ptslistas[!is.na(ptslistas$listasGR14) & ptslistas$listasGR14 >= 11,]
+```
+
 
 ```{r}
 
@@ -82,6 +125,9 @@ plgsher=plgs[,grep("^Herf",
 
 ```{r}
 names(plgsher)
+```
+```{r}
+
 ```
 
 ```{r}
@@ -148,7 +194,7 @@ her14_bottom =plgsher[!is.na(plgsher$HerfindahlGL14) & plgsher$HerfindahlGL14 <=
 
 
 
-```{r distritos,echo=FALSE,message=FALSE,warning=FALSE,eval=TRUE,fig.show='hold',fig.width=10,fig.height=8, fig.align='center'}
+```{r distritosPeru,echo=FALSE,message=FALSE,warning=FALSE,eval=TRUE,fig.show='hold',fig.width=10,fig.height=8, fig.align='center'}
 #quartz()
 c1u=-79
 c2u=-1.1
@@ -163,36 +209,48 @@ c2i=-9.4
 library(maps)
 par(mfrow=c(2,2),mar=c(1, 1, 1, 1))
 plot(peruframe, main="Elecciones Distritales 2002")
-plot(her02_top,col='blue',lty=0,add = TRUE)
-plot(her02_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her02_top)," Distritos"),cex = 1,col = 'blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her02_bottom)," Distritos"),col="red")
+plot(her02_top,col='seagreen1',lty=0,add = TRUE)
+plot(her02_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(much02,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+
+text(c1u,c2u,paste0(nrow(much02)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+
+text(c1d,c2d,paste0("Sin competencia en \n",length(her02_top)," Distritos"),cex = 1,col = 'darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her02_bottom)," Distritos"),col='red')
 map.scale(ratio=FALSE, relwidth=0.3,metric=T,cex=0.5)
 
+#####
 plot(peruframe, main="Elecciones Distritales 2006")
-plot(her06_top,col='blue',lty=0,add = TRUE)
-plot(her06_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her06_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her06_bottom)," Distritos"),col="red")
+plot(her06_top,col='seagreen1',lty=0,add = TRUE)
+plot(her06_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(much06,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(much06)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her06_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her06_bottom)," Distritos"),col='red')
 
-
+####
 plot(peruframe, main="Elecciones Distritales 2010")
-plot(her10_top,col='blue',lty=0,add = TRUE)
-plot(her10_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her10_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her10_bottom)," Distritos"),col="red")
+plot(her10_top,col='seagreen1',lty=0,add = TRUE)
+plot(her10_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(much10,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(much10)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her10_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her10_bottom)," Distritos"),col='red')
 
-
+####
 plot(peruframe, main="Elecciones Distritales 2014")
-plot(her14_top,col='blue',lty=0,add = TRUE)
-plot(her14_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her14_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her14_bottom)," Distritos"),col="red")
+plot(her14_top,col='seagreen1',lty=0,add = TRUE)
+plot(her14_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(much14,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(much14)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her14_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her14_bottom)," Distritos"),col='red')
 library(GISTools)
 north.arrow(xb=-77, yb=-18, len=0.5, lab="N",col='grey')
 detach("package:GISTools", unload=TRUE)
 
 ```
+
 
 
 ```{r provincias,echo=FALSE,message=FALSE,warning=FALSE,eval=TRUE,fig.show='hold',fig.width=10,fig.height=8, fig.align='center'}
@@ -209,31 +267,39 @@ c2i=-9.4
 
 par(mfrow=c(2,2),mar=c(1, 1, 1, 1))
 plot(peruframe, main="Elecciones Provinciales 2002")
-plot(her02P_top,col='blue',lty=0,add = TRUE)
-plot(her02P_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her02P_top)," Distritos"),cex = 1,col = 'blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her02P_bottom)," Distritos"),col="red")
+plot(her02P_top,col='seagreen1',lty=0,add = TRUE)
+plot(her02P_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(muchp02,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(muchp02)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her02P_top)," Distritos"),cex = 1,col = 'darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her02P_bottom)," Distritos"),col='red')
 map.scale(ratio=FALSE, relwidth=0.3,metric=T,cex=0.5)
 
 plot(peruframe, main="Elecciones Provinciales 2006")
-plot(her06P_top,col='blue',lty=0,add = TRUE)
-plot(her06P_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her06P_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her06P_bottom)," Distritos"),col="red")
+plot(her06P_top,col='seagreen1',lty=0,add = TRUE)
+plot(her06P_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(muchp10,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(muchp10)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her06P_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her06P_bottom)," Distritos"),col='red')
 
 
 plot(peruframe, main="Elecciones Provinciales 2010")
-plot(her10P_top,col='blue',lty=0,add = TRUE)
-plot(her10P_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her10P_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her10P_bottom)," Distritos"),col="red")
+plot(her10P_top,col='seagreen1',lty=0,add = TRUE)
+plot(her10P_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(muchp10,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(muchp10)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her10P_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her10P_bottom)," Distritos"),col='red')
 
 
 plot(peruframe, main="Elecciones Provinciales 2014")
-plot(her14P_top,col='blue',lty=0,add = TRUE)
-plot(her14P_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her14P_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her14P_bottom)," Distritos"),col="red")
+plot(her14P_top,col='seagreen1',lty=0,add = TRUE)
+plot(her14P_bottom,col='palevioletred1',lty=0,add = TRUE)
+plot(muchp14,pch=16, col=alpha("blue",0.6),cex=0.5,add=TRUE)
+text(c1u,c2u,paste0(nrow(muchp14)," Distritos con más\n de 10 candidatos"),cex = 0.8,col = "blue")
+text(c1d,c2d,paste0("Sin competencia en \n",length(her14P_top)," Distritos"),cex = 1,col='darkgreen')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her14P_bottom)," Distritos"),col='red')
 library(GISTools)
 north.arrow(xb=-77, yb=-18, len=0.5, lab="N",col='grey')
 detach("package:GISTools", unload=TRUE)
@@ -241,7 +307,7 @@ detach("package:GISTools", unload=TRUE)
 ```
 
 
-```{r provincias,echo=FALSE,message=FALSE,warning=FALSE,eval=TRUE,fig.show='hold',fig.width=10,fig.height=8, fig.align='center'}
+```{r regiones,echo=FALSE,message=FALSE,warning=FALSE,eval=TRUE,fig.show='hold',fig.width=10,fig.height=8, fig.align='center'}
 #quartz()
 c1u=-79
 c2u=-1.1
@@ -255,31 +321,31 @@ c2i=-9.4
 
 par(mfrow=c(2,2),mar=c(1, 1, 1, 1))
 plot(peruframe, main="Elecciones Regionales 2002")
-plot(her02R_top,col='blue',lty=0,add = TRUE)
-plot(her02R_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her02R_top)," Distritos"),cex = 1,col = 'blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her02R_bottom)," Distritos"),col="red")
+plot(her02R_top,col='seagreen1',lty=0,add = TRUE)
+plot(her02R_bottom,col='palevioletred1',lty=0,add = TRUE)
+text(c1d,c2d,paste0("Sin competencia en \n",length(her02R_top)," Distritos"),cex = 1,col = 'seagreen1')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her02R_bottom)," Distritos"),col='palevioletred1')
 map.scale(ratio=FALSE, relwidth=0.3,metric=T,cex=0.5)
 
 plot(peruframe, main="Elecciones Regionales 2006")
-plot(her06R_top,col='blue',lty=0,add = TRUE)
-plot(her06R_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her06R_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her06R_bottom)," Distritos"),col="red")
+plot(her06R_top,col='seagreen1',lty=0,add = TRUE)
+plot(her06R_bottom,col='palevioletred1',lty=0,add = TRUE)
+text(c1d,c2d,paste0("Sin competencia en \n",length(her06R_top)," Distritos"),cex = 1,col='seagreen1')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her06R_bottom)," Distritos"),col='palevioletred1')
 
 
 plot(peruframe, main="Elecciones Regionales 2010")
-plot(her10R_top,col='blue',lty=0,add = TRUE)
-plot(her10R_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her10R_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her10R_bottom)," Distritos"),col="red")
+plot(her10R_top,col='seagreen1',lty=0,add = TRUE)
+plot(her10R_bottom,col='palevioletred1',lty=0,add = TRUE)
+text(c1d,c2d,paste0("Sin competencia en \n",length(her10R_top)," Distritos"),cex = 1,col='seagreen1')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her10R_bottom)," Distritos"),col='palevioletred1')
 
 
 plot(peruframe, main="Elecciones Regionales 2014")
-plot(her14R_top,col='blue',lty=0,add = TRUE)
-plot(her14R_bottom,col='red',lty=0,add = TRUE)
-text(c1d,c2d,paste0("Sin competencia en \n",length(her14R_top)," Distritos"),cex = 1,col='blue')
-text(c1i,c2i,paste0("Alta competencia en \n",length(her14R_bottom)," Distritos"),col="red")
+plot(her14R_top,col='seagreen1',lty=0,add = TRUE)
+plot(her14R_bottom,col='palevioletred1',lty=0,add = TRUE)
+text(c1d,c2d,paste0("Sin competencia en \n",length(her14R_top)," Distritos"),cex = 1,col='seagreen1')
+text(c1i,c2i,paste0("Alta competencia en \n",length(her14R_bottom)," Distritos"),col='palevioletred1')
 library(GISTools)
 north.arrow(xb=-77, yb=-18, len=0.5, lab="N",col='grey')
 detach("package:GISTools", unload=TRUE)
