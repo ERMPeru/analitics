@@ -6,9 +6,43 @@ library(scales)
 library(ggpubr)
 ```
 
-#Candidatos y Actores Politicos en Lima Metropolitana 2018 en Twitter
 
-###Crecimiento de followers: 
+
+```{r include=FALSE}
+data=read.csv("DataFinal.csv")
+```
+
+###Desempeño en la red y votos válidos
+
+```{r include=FALSE}
+names(data)
+```
+
+```{r include=FALSE}
+data$Nuevos_Followers=data$Telecciones - data$TAfterDeb
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+x <- data$candidato
+hovertxt <- paste("Candidato:", x)
+
+d <- ggplot(data, aes(x=Nuevos_Followers, y=validos, size=totEngagementFB, color=totEngagementFB,text = hovertxt)) + geom_point()  + ggtitle("Crecieron los candidatos en la red luego del primer debate?") + ylab("% votos validos") + xlab("Nuevos Followers en Twitter (debate hasta elecciones)") + geom_label_repel(aes(label = candidato), segment.color = 'grey50',size=3) + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15', labels = comma)
+
+ggplotly(d)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+x <- data$candidato
+hovertxt <- paste("Candidato:", x)
+
+d <- ggplot(data, aes(x=Nuevos_Followers, y=ipsos, size=totEngagementFB, color=totEngagementFB,text = hovertxt)) + geom_point()  + ggtitle("Crecieron los candidatos en la red luego del primer debate?") + ylab("% votos validos") + xlab("Nuevos Followers en Twitter (debate hasta elecciones)") + geom_label_repel(aes(label = candidato), segment.color = 'grey50',size=3) + 
+scale_color_gradient(low = '#fcae91', high = '#a50f15', labels = comma)
+
+ggplotly(d)
+```
+
 
 ```{r include=FALSE}
 data=read.csv("dataAfertdep.csv")
@@ -25,7 +59,7 @@ dataLong$periodo <- ordered(dataLong$periodo, labels =labels,
 ```
 
 
-```{r}
+```{r include=FALSE}
 library(forcats)
 g <- ggplot(data=dataLong,
             aes(x=fct_rev(candidato),y=seguidoresNuevos)) + geom_bar(stat="identity")
@@ -33,7 +67,7 @@ g +     coord_flip() + facet_wrap( ~ periodo,scales="free_x") + ylim(0, 4000) + 
 ```
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r include=FALSE}
 g <- ggplot(data=data,
         aes(x=reorder(candidato, Nuevos_Followers1), y=Nuevos_Followers1,group=1)) +
   geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
@@ -41,7 +75,7 @@ g <- ggplot(data=data,
   ylim(0, 4000)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r include=FALSE}
 d <- ggplot(data=data,
        aes(x=reorder(candidato, Nuevos_Followers2), y=Nuevos_Followers2,group=1)) +
   geom_bar(stat="identity") + xlab("") + ylab("Nuevos Followers")+
@@ -49,17 +83,14 @@ d <- ggplot(data=data,
   ylim(0, 4000)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r include=FALSE}
 ggarrange(g, d ,
           ncol = 2, nrow = 1)
 ```
 
-###Crecimiento de followers e intención de voto
 
-Crecimiento antes y después del debate: 
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers2, y=setiembre, size=following_afdeb, color=antiguedad)) + geom_point()  + ggtitle("Han crecido los candidatos en la red luego del debate?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + geom_label_repel(aes(label = candidato), segment.color = 'grey50',size=3,box.padding= unit(0.4, "lines")) + scale_size(labels = comma)#  + 
+```{r include=FALSE}
+ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers2, y=setiembre, size=following_afdeb, color=antiguedad)) + geom_point()  + ggtitle("Han crecido los candidatos en la red luego del primer debate?") + ylab("% Intencion de voto") + xlab("Nuevos Followers") + geom_label_repel(aes(label = candidato), segment.color = 'grey50',size=3,box.padding= unit(0.4, "lines")) + scale_size(labels = comma)#  + 
 # scale_color_gradient(low = '#fcae91', high = '#a50f15') + theme(
 # panel.grid.minor = element_blank() 
 # 
@@ -67,7 +98,7 @@ ggplot(data[data$setiembre >0,], aes(x=Nuevos_Followers2, y=setiembre, size=foll
 
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
+```{r include=FALSE}
 
 x <- data[data$setiembre >0,]$candidato
 hovertxt <- paste("Candidato:", x)
